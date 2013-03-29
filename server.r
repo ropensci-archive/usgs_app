@@ -31,7 +31,8 @@ shinyServer(function(input, output) {
     phylog2 <- ggphylo(phylog, label.size=5, label.color.by='circle', label.color.scale=scale_colour_discrete(h=c(90, 10))) + theme_phylo_blank()
     
     # Make map
-    out <- llply(species2, function(x) occurrencelist(x, coordinatestatus = TRUE, maxresults = 100))
+    registerDoMC(cores=4)
+    out <- llply(species2, function(x) occurrencelist(x, coordinatestatus = TRUE, maxresults = 100), .parallel=TRUE)
     map <- gbifmap(out)
     
     list(dat, phylog2, map)
