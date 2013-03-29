@@ -1,5 +1,3 @@
-# JUST COPIED FROM THE TAXIZE_INVASIVE APP, SO MODIFY...
-
 library(shiny)
 library(plyr)
 library(taxize)

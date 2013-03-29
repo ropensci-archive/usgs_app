@@ -1,11 +1,9 @@
-# JUST COPIED FROM THE TAXIZE_INVASIVE APP, SO MODIFY...
-
 library(shiny)
 
 # Define UI for application that plots random distributions 
 shinyUI(pageWithSidebar(
   
-  headerPanel(title=HTML("<a href = \"https://github.com/ropensci/taxize_/blob/master/R/phylomatic_tree.R\">taxize - Is invasive?</a>"), windowTitle="taxize - invasive"),
+  headerPanel(title=HTML("usgs demo"), windowTitle="ropensci-USGS"),
   
   sidebarPanel(
     wellPanel(
