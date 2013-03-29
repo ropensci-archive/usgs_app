@@ -7,7 +7,7 @@ Sync to our ropensci Shiny server:
 
 + Make changes
 + Commit them
-+ Then use the sh file to deploy to github and Shiny server
++ Then `cd ..` out to parent directory above `usgs_app` repo, and use the sh file to deploy to github and Shiny server
 
 `sh deploy.sh`
 
