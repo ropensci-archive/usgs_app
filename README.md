@@ -7,8 +7,9 @@ Sync to our ropensci Shiny server:
 
 + Make changes
 + Commit them
-+ Then `cd ..` out to parent directory above `usgs_app` repo, and use the sh file to deploy to github and Shiny server
++ Push to github
++ Then `cd ..` out to parent directory above `usgs_app` repo, and rsync to the Shiny server
 
-`sh deploy.sh`
+`rsync -avz --delete usgs_app ropensci@glimmer.rstudio.com:~/ShinyApps/`
 
-Then enter the password for our server. 
+...then enter the password for our server. 
