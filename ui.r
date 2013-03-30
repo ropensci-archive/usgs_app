@@ -21,7 +21,8 @@ shinyUI(pageWithSidebar(
   
   mainPanel(
     tabsetPanel(
-      tabPanel("Table", tableOutput("invasiveness")),
+    	tabPanel("ITIS Data", tableOutput("itis_data")),
+      tabPanel("Invasive?", tableOutput("invasiveness")),
       tabPanel("Phylogeny", plotOutput("phylogeny")),
       tabPanel("Map", plotOutput("map"))
     )

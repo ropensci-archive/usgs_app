@@ -14,6 +14,19 @@ shinyServer(function(input, output) {
   datasetInput <- reactive({
     species <- input$spec
     species2 <- strsplit(species, ",")[[1]]
+    
+    # Get ITIS data
+    ## Get hierarchy up from species
+    tsns <- get_tsn(searchterm=species2, searchtype="sciname")
+#     ldply(tsns, function(x) as.character(itis_taxrank(x)))
+    registerDoMC(cores=4)
+    itisdata <- ldply(tsns, gethierarchyupfromtsn, .parallel=TRUE)
+    
+    ## Get downstream hierarchy
+#     temp <- ldply(tsns, itis_downstream, downto=)
+#     itisdata <- XXXX
+    
+    # Invasivesnes status
     dat <- gisd_isinvasive(x=species2, simplify=TRUE)
     
     # make phylogeny
@@ -35,18 +48,22 @@ shinyServer(function(input, output) {
     out <- llply(species2, function(x) occurrencelist(x, coordinatestatus = TRUE, maxresults = 100), .parallel=TRUE)
     map <- gbifmap(out)
     
-    list(dat, phylog2, map)
+    list(itisdata, dat, phylog2, map)
   })
   
-  output$invasiveness <- renderTable({
+  output$itis_data <- renderTable({
   	datasetInput()[[1]]
   })
   
+  output$invasiveness <- renderTable({
+  	datasetInput()[[2]]
+  })
+  
   output$phylogeny <- renderPlot({
-    print(datasetInput()[[2]])
+    print(datasetInput()[[3]])
   })
   
   output$map <- renderPlot({
-    print(datasetInput()[[3]])
+    print(datasetInput()[[4]])
   })
 })
