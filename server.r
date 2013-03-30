@@ -16,11 +16,23 @@ shinyServer(function(input, output) {
     species2 <- strsplit(species, ",")[[1]]
     
     # Get ITIS data
-    ## Get hierarchy up from species
     tsns <- get_tsn(searchterm=species2, searchtype="sciname")
+    
+    ## Get hierarchy up from species
+    if (input$getup) {
+    	registerDoMC(cores=4)
+    	itisdata <- ldply(tsns, gethierarchyupfromtsn, .parallel=TRUE)
+    }
+    
+    ## Get downstream from taxon
+    if (input$getup) {
+    	registerDoMC(cores=4)
+    	itisdata <- ldply(tsns, itis_downstream, downto = "", .parallel=TRUE)
+    }
+    getdown
+    
+    ## xxxxx
 #     ldply(tsns, function(x) as.character(itis_taxrank(x)))
-    registerDoMC(cores=4)
-    itisdata <- ldply(tsns, gethierarchyupfromtsn, .parallel=TRUE)
     
     ## Get downstream hierarchy
 #     temp <- ldply(tsns, itis_downstream, downto=)

@@ -15,19 +15,20 @@ shinyUI(pageWithSidebar(
     
     wellPanel(
     	h4(strong("ITIS options:")),
-      checkboxInput(inputId = "gethierarchyupfromtsn",
+      checkboxInput(inputId = "getup",
                     label = strong("Parent taxon"),
                     value = FALSE),
     	
-    	checkboxInput(inputId = "gethierarchyupfromtsn",
-                    label = strong("Downstream hierarchy"),
-                    value = FALSE),
-    	
-    	checkboxInput(inputId = "gethierarchyupfromtsn",
+    	checkboxGroupInput(inputId="getdown", label = strong("Downstream hierarchy"), choices=c("Family","Genu","Species"), selected="Genus"),
+#     	checkboxInput(inputId = "getdown",
+#                     label = strong("Downstream hierarchy"),
+#                     value = FALSE),
+#     	
+    	checkboxInput(inputId = "etc",
                     label = strong("Etc"),
                     value = FALSE),
     	
-    	checkboxInput(inputId = "gethierarchyupfromtsn",
+    	checkboxInput(inputId = "getsyns",
                     label = strong("Get synonyms"),
                     value = FALSE)
     ),
