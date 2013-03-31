@@ -17,21 +17,28 @@ shinyUI(pageWithSidebar(
     	h4(strong("ITIS options:")),
       checkboxInput(inputId = "getup",
                     label = strong("Parent taxon"),
-                    value = FALSE),
-    	
-    	checkboxGroupInput(inputId="getdown", label = strong("Downstream hierarchy"), choices=c("Family","Genu","Species"), selected="Genus"),
-#     	checkboxInput(inputId = "getdown",
-#                     label = strong("Downstream hierarchy"),
-#                     value = FALSE),
-#     	
-    	checkboxInput(inputId = "etc",
-                    label = strong("Etc"),
-                    value = FALSE),
-    	
-    	checkboxInput(inputId = "getsyns",
-                    label = strong("Get synonyms"),
                     value = FALSE)
+    	
+#     	selectInput(inputId = "getdown",
+#     							label = "Downstream hierarchy:",
+#     							choices = c("Family","Genus","Species"),
+#     							selected = "Family"),
+# #     	checkboxGroupInput(inputId="getdown", label = strong("Downstream hierarchy"), choices=c("Family","Genus","Species"), selected="Genus"),
+# #     	checkboxInput(inputId = "getdown",
+# #                     label = strong("Downstream hierarchy"),
+# #                     value = FALSE),
+#     	
+#     	checkboxInput(inputId = "getsyns",
+#                     label = strong("Get synonyms"),
+#                     value = FALSE)
     ),
+    
+    wellPanel(
+      selectInput(inputId = "locally",
+      						label = strong("Do local SQL search"),
+      						choices = c("ITIS web API","local sqlite3"),
+      						selected = "ITIS web API")
+    ),	
     
     submitButton("Update View"),
     
