@@ -2,14 +2,16 @@ library(shiny)
 
 shinyUI(pageWithSidebar(
   
-  headerPanel(title=HTML("TaxaViewer - <i>Discover taxonomic names, and their data</i> "), windowTitle="TaxaViewer"),
+  headerPanel(title=HTML("TaxaViewer - <i>Taxonomy based data discovery</i> "), windowTitle="TaxaViewer"),
   
   sidebarPanel(
     wellPanel(
-    	h4(strong("Input your taxon names:")),
-      textInput(inputId="spec", label="Enter species names, spelled correctly, separated by commas", 
+    	h4(HTML("<a rel=\"bootstrap-tooltip.js\" data-placement=\"top\" title=\"Type or paste in a comma separated string of scientific names\">Input your taxon names:</a>")),
+#     	h4(strong("Input your taxon names:")),
+      textInput(inputId="spec", label="", 
                 value="Carpobrotus edulis,Rosmarinus officinalis,Ageratina riparia"),
-      HTML("<br>")
+    	tags$style(type='text/css', "#spec { width: 300px; word-wrap: normal; }")
+#       HTML("<br>")
 #       HTML("An example query w/ more species: Bidens pilosa,Ageratina riparia,Acroptilon repens,Ageratina adenophora,Aegilops triuncialis,Agrostis capillaris,Cinchona pubescens,Salix babylonica,Pinus caribaea"),
     	
 #     	selectInput(inputId = "scicomm",
@@ -19,7 +21,8 @@ shinyUI(pageWithSidebar(
     ),
     
     wellPanel(
-    	h4(strong("ITIS options:")),
+    	h4(HTML("<a rel=\"bootstrap-tooltip.js\" data-placement=\"bottom\" title=\"Search ITIS locally with sqlite or using the web API\">ITIS options:</a>")),
+#     	h4(strong("ITIS options:")),
     	
 #       checkboxInput(inputId = "getup",
 #                     label = strong("Parent taxon"),
@@ -39,7 +42,8 @@ shinyUI(pageWithSidebar(
 #     
 #     wellPanel(
       selectInput(inputId = "locally",
-      						label = strong("Do local SQL search"),
+      						label= "",
+#       						label = HTML("Search ITIS locally with <br>sqlite or using the web API"),
       						choices = c("ITIS web API","local sqlite3"),
       						selected = "local sqlite3")
     ),
