@@ -49,7 +49,7 @@ shinyUI(pageWithSidebar(
     	tabPanel("ITIS Parent", tableOutput("itis_parent")),
     	tabPanel("ITIS Synonyms", tableOutput("itis_syns")),
       tabPanel("Invasive?", tableOutput("invasiveness")),
-      tabPanel("Phylogeny", plotOutput("phylogeny")),
+#       tabPanel("Phylogeny", plotOutput("phylogeny")),
       tabPanel("Map", plotOutput("map"))
     )
   )
