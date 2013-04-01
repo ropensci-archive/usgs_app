@@ -6,9 +6,9 @@ shinyUI(pageWithSidebar(
   
   sidebarPanel(
     wellPanel(
-    	h4(HTML("<a rel=\"bootstrap-tooltip.js\" data-placement=\"top\" title=\"Type or paste in a comma separated string of scientific names\">Input your taxon names:</a>")),
-#     	h4(strong("Input your taxon names:")),
-      textInput(inputId="spec", label="", 
+#     	h4(HTML("<a rel=\"bootstrap-tooltip.js\" data-placement=\"top\" title=\"Type or paste in a comma separated string of scientific names\">Input your taxon names:</a>")),
+    	h4(strong("Input your taxon names:")),
+      textInput(inputId="spec", label="Type or paste in a comma separated string of scientific names", 
                 value="Carpobrotus edulis,Rosmarinus officinalis,Ageratina riparia"),
     	tags$style(type='text/css', "#spec { width: 300px; word-wrap: normal; }")
 #       HTML("<br>")
@@ -21,8 +21,8 @@ shinyUI(pageWithSidebar(
     ),
     
     wellPanel(
-    	h4(HTML("<a rel=\"bootstrap-tooltip.js\" data-placement=\"bottom\" title=\"Search ITIS locally with sqlite or using the web API\">ITIS options:</a>")),
-#     	h4(strong("ITIS options:")),
+#     	h4(HTML("<a rel=\"bootstrap-tooltip.js\" data-placement=\"bottom\" title=\"Search ITIS locally with sqlite or using the web API\">ITIS options:</a>")),
+    	h4(strong("ITIS options:")),
     	
 #       checkboxInput(inputId = "getup",
 #                     label = strong("Parent taxon"),
@@ -42,8 +42,8 @@ shinyUI(pageWithSidebar(
 #     
 #     wellPanel(
       selectInput(inputId = "locally",
-      						label= "",
-#       						label = HTML("Search ITIS locally with <br>sqlite or using the web API"),
+#       						label= "",
+      						label = HTML("Search ITIS locally with <br>sqlite or using the web API"),
       						choices = c("ITIS web API","local sqlite3"),
       						selected = "local sqlite3")
     ),
