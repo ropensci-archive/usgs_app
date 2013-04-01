@@ -3,6 +3,8 @@ usgs_app
 
 ## Shiny app to interact with USGS data
 
+See [this gist](https://gist.github.com/SChamberlain/5286615) for many examples of what to enter in the search box.
+
 ## Package dependencies:
 ### Install normally, with install.packages("packagename")
 + shiny

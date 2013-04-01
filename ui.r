@@ -2,20 +2,20 @@ library(shiny)
 
 shinyUI(pageWithSidebar(
   
-  headerPanel(title=HTML("USGS App Challenge - <i>Discover taxonomic names, and their data</i> "), windowTitle="rOpenSci-USGS"),
+  headerPanel(title=HTML("TaxaViewer - <i>Discover taxonomic names, and their data</i> "), windowTitle="TaxaViewer"),
   
   sidebarPanel(
     wellPanel(
     	h4(strong("Input your taxon names:")),
       textInput(inputId="spec", label="Enter species names, spelled correctly, separated by commas", 
                 value="Carpobrotus edulis,Rosmarinus officinalis,Ageratina riparia"),
-      HTML("<br>"),
+      HTML("<br>")
 #       HTML("An example query w/ more species: Bidens pilosa,Ageratina riparia,Acroptilon repens,Ageratina adenophora,Aegilops triuncialis,Agrostis capillaris,Cinchona pubescens,Salix babylonica,Pinus caribaea"),
     	
-    	selectInput(inputId = "scicomm",
-    							label = strong("Search by scientific or common names"),
-    							choices = c("Scientific names","Common names"),
-    							selected = "Scientific names")
+#     	selectInput(inputId = "scicomm",
+#     							label = strong("Search by scientific or common names"),
+#     							choices = c("Scientific names","Common names"),
+#     							selected = "Scientific names")
     ),
     
     wellPanel(
@@ -48,6 +48,8 @@ shinyUI(pageWithSidebar(
     
 #     HTML("<br><br>")
     
+    helpText(HTML("This is a submission for the <a href=\"http://applifyingusgsdata.challenge.gov/\">USGS App Challenge</a>")),
+    
     helpText(HTML("We use the plant phylogeny builder <a href=\"http://phylodiversity.net/phylomatic/\">Phylomatic</a> to generate the phylogeny, so for now queries are restricted to plants")),
     
 #     HTML("<br>"),
@@ -60,7 +62,7 @@ shinyUI(pageWithSidebar(
   
   mainPanel(
     tabsetPanel(
-    	tabPanel("ITIS Names", tableOutput("itis_names")),
+    	tabPanel("Name Resolution", tableOutput("tnrs")),
     	tabPanel("ITIS Parents", tableOutput("itis_parent")),
     	tabPanel("ITIS Synonyms", tableOutput("itis_syns")),
       tabPanel("Invasive?", tableOutput("invasiveness")),

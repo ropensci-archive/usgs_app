@@ -7,6 +7,7 @@ library(ape)
 library(ggphylo)
 library(rgbif)
 library(RSQLite)
+library(DBI)
 
 ## Set up server output
 shinyServer(function(input, output) {
@@ -17,36 +18,45 @@ shinyServer(function(input, output) {
 		
     if(input$locally=="local sqlite3") {locally_choice <- TRUE} else {locally_choice <- FALSE}
    
+#     conn <- taxize:::sqlite_init(path="/home/ropensci/ShinyApps/usgs/itis2.sqlite")
     conn <- taxize:::sqlite_init(path="~/github/ropensci/sql/itis2.sqlite")
     
-    if(input$scicomm=="Common names"){
-    	if(!locally_choice){
-    		registerDoMC(cores=4)
-    		comnames <- ldply(species2, searchbycommonname, .parallel=TRUE)
-    	} else
-    	{
-    		comnames <- searchbycommonname(srchkey=species2, locally=locally_choice, sqlconn=conn)
-    	}
-    	return( list("A", "B", comnames) )
-    } else
-    {	
+#     if(input$scicomm=="Common names"){
+#     	if(!locally_choice){
+#     		registerDoMC(cores=4)
+#     		comnames <- ldply(species2, searchbycommonname, .parallel=TRUE)
+#     	} else
+#     	{
+#     		comnames <- searchbycommonname(srchkey=species2, locally=locally_choice, sqlconn=conn)
+#     	}
+#     	return( list("A", "B", comnames) )
+#     } else
+#     {	
     	# Get ITIS data
-    	tsns <- na.omit(get_tsn(searchterm=species2, searchtype="sciname", locally=locally_choice, cn=conn))
-    	tsns_sp <- data.frame(sp=species2, tsn=as.vector(tsns))
-    	
-    	return( list(tsns, tsns_sp, tsns_sp) )
-    }
+    tsns <- na.omit(get_tsn(searchterm=species2, searchtype="sciname", locally=locally_choice, cn=conn))
+    tsns_sp <- data.frame(sp=species2, tsn=as.vector(tsns))
+    
+    return( list(tsns, tsns_sp, tsns_sp) )
+#     }
   })
 	
 	
-	output$itis_names <- renderTable(function(){
-		foo()[[3]]
-  })
+# 	output$itis_names <- renderTable(function(){
+# 		foo()[[3]]
+#   })
+# 	
+	
+	output$tnrs <- renderTable({
+		species <- input$spec
+		species2 <- strsplit(species, ",")[[1]]
+		tnrs(species2, getpost="POST", source_ = "NCBI")
+	})
 	
 	
 	output$itis_parent <- renderTable(function(){
 
-		conn <- taxize:::sqlite_init(path="~/github/ropensci/sql/itis2.sqlite")
+		#     conn <- taxize:::sqlite_init(path="/home/ropensci/ShinyApps/usgs/itis2.sqlite")
+    conn <- taxize:::sqlite_init(path="~/github/ropensci/sql/itis2.sqlite")
 		
 		# get locally choice
 		if(input$locally=="local sqlite3") {locally_choice <- TRUE} else {locally_choice <- FALSE}
@@ -66,7 +76,8 @@ shinyServer(function(input, output) {
 	
 	output$itis_syns <- renderTable({
 
-		conn <- taxize:::sqlite_init(path="~/github/ropensci/sql/itis2.sqlite")
+		#     conn <- taxize:::sqlite_init(path="/home/ropensci/ShinyApps/usgs/itis2.sqlite")
+    conn <- taxize:::sqlite_init(path="~/github/ropensci/sql/itis2.sqlite")
 		
 		if(input$locally=="local sqlite3") {locally_choice <- TRUE} else {locally_choice <- FALSE}
 		
