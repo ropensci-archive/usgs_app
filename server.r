@@ -15,35 +15,44 @@ shinyServer(function(input, output) {
     species <- input$spec
 		species2 <- strsplit(species, ",")[[1]]
 		
-		conn <- taxize:::sqlite_init(path="~/github/ropensci/sql/itis2.sqlite")
-		
-		# get locally choice
-		if(input$locally=="local sqlite3") {locally_choice <- TRUE} else {locally_choice <- FALSE}
-		
-		# Get ITIS data
-		tsns <- na.omit(get_tsn(searchterm=species2, searchtype="sciname", locally=locally_choice, cn=conn))
-		tsns_sp <- data.frame(sp=species2, tsn=as.vector(tsns))
+    if(input$locally=="local sqlite3") {locally_choice <- TRUE} else {locally_choice <- FALSE}
+   
+    conn <- taxize:::sqlite_init(path="~/github/ropensci/sql/itis2.sqlite")
     
-    list(tsns, tsns_sp)
-		
+    if(input$scicomm=="Common names"){
+    	if(!locally_choice){
+    		registerDoMC(cores=4)
+    		comnames <- ldply(species2, searchbycommonname, .parallel=TRUE)
+    	} else
+    	{
+    		comnames <- searchbycommonname(srchkey=species2, locally=locally_choice, sqlconn=conn)
+    	}
+    	return( list("A", "B", comnames) )
+    } else
+    {	
+    	# Get ITIS data
+    	tsns <- na.omit(get_tsn(searchterm=species2, searchtype="sciname", locally=locally_choice, cn=conn))
+    	tsns_sp <- data.frame(sp=species2, tsn=as.vector(tsns))
+    	
+    	return( list(tsns, tsns_sp, tsns_sp) )
+    }
   })
 	
+	
+	output$itis_names <- renderTable(function(){
+		foo()[[3]]
+  })
+	
+	
 	output$itis_parent <- renderTable(function(){
-		
-# 		species <- input$spec
-# 		species2 <- strsplit(species, ",")[[1]]
 
 		conn <- taxize:::sqlite_init(path="~/github/ropensci/sql/itis2.sqlite")
 		
 		# get locally choice
 		if(input$locally=="local sqlite3") {locally_choice <- TRUE} else {locally_choice <- FALSE}
 		
-		# Get ITIS data
-# 		tsns <- na.omit(get_tsn(searchterm=species2, searchtype="sciname", locally=locally_choice, cn=conn))
-# 		tsns_sp <- data.frame(sp=species2, tsn=as.vector(tsns))
-		
 		## Get hierarchy up from species
-		if (input$getup) {
+# 		if (input$getup) {
 			if(!locally_choice){
 				registerDoMC(cores=4)
 				ldply(foo()[[1]], gethierarchyupfromtsn, .parallel=TRUE)
@@ -51,20 +60,18 @@ shinyServer(function(input, output) {
 			{
 				ldply(foo()[[1]], gethierarchyupfromtsn, locally=locally_choice, sqlconn = conn)
 			}
-		} else {NULL}
+# 		} else {NULL}
   })
 	
 	
 	output$itis_syns <- renderTable({
-		
-# 		species <- input$spec
-# 		species2 <- strsplit(species, ",")[[1]]
+
 		conn <- taxize:::sqlite_init(path="~/github/ropensci/sql/itis2.sqlite")
 		
 		if(input$locally=="local sqlite3") {locally_choice <- TRUE} else {locally_choice <- FALSE}
 		
 		## Get synonyms
-		if (input$getsyns) {
+# 		if (input$getsyns) {
 			if(!locally_choice){
 				registerDoMC(cores=4)
 				itisdata_syns <- ldply(foo()[[1]], getsynonymnamesfromtsn, .parallel=TRUE)[,-1]
@@ -78,16 +85,49 @@ shinyServer(function(input, output) {
 				#     		itisdata_syns <- ldply(tsns, getsynonymnamesfromtsn, locally=locally_choice, sqlconn = conn)
 				ldply(foo()[[1]], getsyns)
 			}
-		} else {NULL}
+# 		} else {NULL}
 	})
 	  
 	
-  output$invasiveness <- renderTable({
-  	species <- input$spec
+	bar <- reactive({
+		species <- input$spec
 		species2 <- strsplit(species, ",")[[1]]
-  	gisd_isinvasive(x=species2, simplify=TRUE)
+		df <- gisd_isinvasive(x=species2, simplify=TRUE)
+		df$status <- gsub("Not in GISD", "Not Invasive", df$status)
+		df
+	})
+	
+  output$invasiveness <- renderTable({
+  	bar()
   })
 	
+	output$phylogeny <- renderPlot({
+		species <- input$spec
+		species2 <- strsplit(species, ",")[[1]]
+		
+		# Make phylogeny
+		registerDoMC(cores=4)
+		phylog <- phylomatic_tree(taxa=species2, get = 'POST', informat='newick', method = "phylomatic",
+															storedtree = "R20120829", taxaformat = "slashpath", outformat = "newick", clean = "true", parallel=TRUE)
+		phylog$tip.label <- capwords(phylog$tip.label)
+		
+		for(i in seq_along(phylog$tip.label)){
+			phylog <- tree.set.tag(phylog, tree.find(phylog, phylog$tip.label[i]), 'circle', bar()[bar()$species %in% gsub("_"," ",phylog$tip.label[i]),"status"])
+		}
+		
+		p <- ggphylo(phylog, label.size=5, label.color.by='circle', label.color.scale=scale_colour_discrete(name="", h=c(90, 10))) +
+			theme_bw(base_size=18) +
+# 			scale_colour_discrete(name="") + 
+			theme(panel.grid.major = element_blank(),panel.grid.minor = element_blank(),panel.background = element_blank(),
+      axis.title.x = element_text(colour=NA),
+      axis.title.y = element_blank(),
+      axis.text.x = element_blank(),
+      axis.text.y = element_blank(),
+      axis.line = element_blank(),
+      axis.ticks = element_blank(),
+			panel.border = element_blank())
+		print(p)
+	})
 	
 	output$map <- renderPlot({
 		species <- input$spec
@@ -95,107 +135,16 @@ shinyServer(function(input, output) {
 		
 		# Make map
 		registerDoMC(cores=4)
-		out <- llply(species2, function(x) occurrencelist(x, coordinatestatus = TRUE, maxresults = 100, fixnames="changealltoorig"), .parallel=TRUE)
+		out <- llply(species2, function(x) occurrencelist(x, coordinatestatus = TRUE, maxresults = 100, fixnames="changealltoorig", removeZeros=TRUE), .parallel=TRUE)
+		fixdfs <- function(x){
+			temp <- x[!is.na(x$decimalLatitude) == TRUE,]
+			temp$decimalLatitude <- as.numeric(temp$decimalLatitude)
+			temp$decimalLongitude <- as.numeric(temp$decimalLongitude)
+			temp[!temp$decimalLatitude == 0,]
+		}
+		out <- llply(out, fixdfs)
 		print(gbifmap(out))
 	})
-
-#   datasetInput <- reactive({
-# #   	conn <- taxize:::sqlite_init(path="~/ShinyApps/usgs/itis2.sqlite")
-#   	
-#     # get locally choice
-#     if(input$locally=="local sqlite3") {locally_choice <- TRUE} else {locally_choice <- FALSE}
-#     
-#     # Get ITIS data
-#     tsns <- na.omit(get_tsn(searchterm=species2, searchtype="sciname", locally=locally_choice, cn=conn))
-#   	tsns_sp <- data.frame(sp=species2, tsn=as.vector(tsns))
-#     
-#     ## Get hierarchy up from species
-#     if (input$getup) {
-#     	if(!locally_choice){
-#     		registerDoMC(cores=4)
-#     		itisdata_getup <- ldply(tsns, gethierarchyupfromtsn, .parallel=TRUE)
-#     	} else
-#     	{
-#     		itisdata_getup <- ldply(tsns, gethierarchyupfromtsn, locally=locally_choice, sqlconn = conn)
-#     	}
-#     } else {itisdata_getup <- NULL}
-#     
-# #     ## Get downstream from taxon
-# #     if (is.character(input$getdown)) {
-# #     	registerDoMC(cores=4)
-# #     	itisdata_getdown <- ldply(tsns, itis_downstream, downto = input$getdown, .parallel=TRUE)[,-1]	
-# #     } else {itisdata_getdown <- NULL}
-# #     
-#     ## Get synonyms
-#     if (input$getsyns) {
-#     	if(!locally_choice){
-#     		registerDoMC(cores=4)
-#     		itisdata_syns <- ldply(tsns, getsynonymnamesfromtsn, .parallel=TRUE)[,-1]
-#     	} else
-#     	{
-#     		getsyns <- function(x){
-# 					temp <- getsynonymnamesfromtsn(x, locally=locally_choice, sqlconn = conn)
-# 					names(temp)[1] <- "synonym"
-# 					data.frame(submittedName = rep(tsns_sp[tsns_sp$tsn%in%x,"sp"],nrow(temp)), temp)
-#     		}
-# #     		itisdata_syns <- ldply(tsns, getsynonymnamesfromtsn, locally=locally_choice, sqlconn = conn)
-#     		itisdata_syns <- ldply(tsns, getsyns)
-#     	}
-#     } else {itisdata_syns <- NULL}
-# #     
-# #     ## put ITIS data into a list
-# #     itisdata_list <- compact(list(itisdata_getup,itisdata_getdown,itisdata_syns))
-# #     
-# #     
-#     
-#     # Invasivesnes status
-#     dat <- gisd_isinvasive(x=species2, simplify=TRUE)
-#     
-#     
-#     
-#     # Make phylogeny
-#     registerDoMC(cores=4)
-#     phylog <- phylomatic_tree(taxa=species2, get = 'POST', informat='newick', method = "phylomatic",
-#                     storedtree = "R20120829", taxaformat = "slashpath", outformat = "newick", clean = "true", parallel=TRUE)
-#     phylog$tip.label <- capwords(phylog$tip.label)
-#     
-#     for(i in seq_along(phylog$tip.label)){
-#       phylog <- tree.set.tag(phylog, tree.find(phylog, phylog$tip.label[i]), 'circle', dat[dat$species %in% gsub("_"," ",phylog$tip.label[i]),"status"])
-#     }
-#     phylog2 <- ggphylo(phylog, label.size=5, label.color.by='circle', label.color.scale=scale_colour_discrete(h=c(90, 10))) + theme_phylo_blank()
-#     
-#     
-#     
-#     # Make map
-#     registerDoMC(cores=4)
-#     out <- llply(species2, function(x) occurrencelist(x, coordinatestatus = TRUE, maxresults = 100, fixnames="changealltoorig"), .parallel=TRUE)
-#     map <- gbifmap(out)
-#     
-#     
-#     # PUt output in a list
-# #     list(itisdata_list, dat, phylog2, map)
-#     list(itisdata_getup, itisdata_syns, dat, phylog2, map)
-#   })
-#   
-#   
-#   
-#   output$itis_parent <- renderTable({
-#   	datasetInput()[[1]]
-#   })
-#   
-#   output$itis_syns <- renderTable({
-#   	datasetInput()[[2]]
-#   })
-#   
-#   output$invasiveness <- renderTable({
-#   	datasetInput()[[3]]
-#   })
-#   
-#   output$phylogeny <- renderPlot({
-#     print(datasetInput()[[4]])
-#   })
-#   
-#   output$map <- renderPlot({
-#     print(datasetInput()[[5]])
-#   })
+	
+	
 })
