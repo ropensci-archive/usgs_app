@@ -21,35 +21,17 @@ shinyServer(function(input, output) {
 #     conn <- taxize:::sqlite_init(path="/home/ropensci/ShinyApps/usgs/itis2.sqlite")
     conn <- taxize:::sqlite_init(path="~/github/ropensci/sql/itis2.sqlite")
     
-#     if(input$scicomm=="Common names"){
-#     	if(!locally_choice){
-#     		registerDoMC(cores=4)
-#     		comnames <- ldply(species2, searchbycommonname, .parallel=TRUE)
-#     	} else
-#     	{
-#     		comnames <- searchbycommonname(srchkey=species2, locally=locally_choice, sqlconn=conn)
-#     	}
-#     	return( list("A", "B", comnames) )
-#     } else
-#     {	
-    	# Get ITIS data
+    # Get ITIS data
     tsns <- na.omit(get_tsn(searchterm=species2, searchtype="sciname", locally=locally_choice, cn=conn))
     tsns_sp <- data.frame(sp=species2, tsn=as.vector(tsns))
     
-    return( list(tsns, tsns_sp, tsns_sp) )
-#     }
+    list(tsns, tsns_sp)
   })
-	
-	
-# 	output$itis_names <- renderTable(function(){
-# 		foo()[[3]]
-#   })
-# 	
 	
 	output$tnrs <- renderTable({
 		species <- input$spec
 		species2 <- strsplit(species, ",")[[1]]
-		tnrs(species2, getpost="POST", source_ = "NCBI")
+		tnrs(species2, getpost="POST", source_ = "NCBI")[,1:5]
 	})
 	
 	
@@ -62,17 +44,14 @@ shinyServer(function(input, output) {
 		if(input$locally=="local sqlite3") {locally_choice <- TRUE} else {locally_choice <- FALSE}
 		
 		## Get hierarchy up from species
-# 		if (input$getup) {
-			if(!locally_choice){
-				registerDoMC(cores=4)
-				ldply(foo()[[1]], gethierarchyupfromtsn, .parallel=TRUE)
-			} else
-			{
-				ldply(foo()[[1]], gethierarchyupfromtsn, locally=locally_choice, sqlconn = conn)
-			}
-# 		} else {NULL}
+    if(!locally_choice){
+    	registerDoMC(cores=4)
+    	ldply(foo()[[1]], gethierarchyupfromtsn, .parallel=TRUE)
+    } else
+    {
+    	ldply(foo()[[1]], gethierarchyupfromtsn, locally=locally_choice, sqlconn = conn)
+    }
   })
-	
 	
 	output$itis_syns <- renderTable({
 
@@ -81,25 +60,27 @@ shinyServer(function(input, output) {
 		
 		if(input$locally=="local sqlite3") {locally_choice <- TRUE} else {locally_choice <- FALSE}
 		
-		## Get synonyms
-# 		if (input$getsyns) {
-			if(!locally_choice){
-				registerDoMC(cores=4)
-				itisdata_syns <- ldply(foo()[[1]], getsynonymnamesfromtsn, .parallel=TRUE)[,-1]
-			} else
-			{
-				getsyns <- function(x){
-					temp <- getsynonymnamesfromtsn(x, locally=locally_choice, sqlconn = conn)
-					names(temp)[1] <- "synonym"
-					data.frame(submittedName = rep(foo()[[2]][foo()[[2]]$tsn%in%x,"sp"],nrow(temp)), temp)
-				}
-				#     		itisdata_syns <- ldply(tsns, getsynonymnamesfromtsn, locally=locally_choice, sqlconn = conn)
-				ldply(foo()[[1]], getsyns)
-			}
-# 		} else {NULL}
+    ## Get synonyms
+    if(!locally_choice){
+    	registerDoMC(cores=4)
+    	itisdata_syns <- ldply(foo()[[1]], getsynonymnamesfromtsn, .parallel=TRUE)[,-1]
+    } else
+    {
+    	getsyns <- function(x){
+    		temp <- getsynonymnamesfromtsn(x, locally=locally_choice, sqlconn = conn)
+    		names(temp)[1] <- "synonym"
+    		data.frame(submittedName = rep(foo()[[2]][foo()[[2]]$tsn%in%x,"sp"],nrow(temp)), temp)
+    	}
+    	ldply(foo()[[1]], getsyns)
+    }
+	})
+	
+	output$rank_names <- renderTable({
+		species <- input$spec
+		species2 <- strsplit(species, ",")[[1]]
+		tax_name(query=species2, get=c("genus", "family", "class", "kingdom"), db="itis", locally=TRUE, cn=conn)
 	})
 	  
-	
 	bar <- reactive({
 		species <- input$spec
 		species2 <- strsplit(species, ",")[[1]]
@@ -128,7 +109,6 @@ shinyServer(function(input, output) {
 		
 		p <- ggphylo(phylog, label.size=5, label.color.by='circle', label.color.scale=scale_colour_discrete(name="", h=c(90, 10))) +
 			theme_bw(base_size=18) +
-# 			scale_colour_discrete(name="") + 
 			theme(panel.grid.major = element_blank(),panel.grid.minor = element_blank(),panel.background = element_blank(),
       axis.title.x = element_text(colour=NA),
       axis.title.y = element_blank(),
@@ -154,8 +134,11 @@ shinyServer(function(input, output) {
 			temp[!temp$decimalLatitude == 0,]
 		}
 		out <- llply(out, fixdfs)
-		print(gbifmap(out))
+		print( gbifmap(out, customize = list( 
+			scale_colour_brewer(type="div", palette = 7),
+			theme(legend.key	= element_blank(), plot.background = element_rect(colour="grey")),
+			guides(colour=guide_legend(override.aes = list(size = 5)))
+		)) )
 	})
-	
 	
 })
