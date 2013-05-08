@@ -34,7 +34,7 @@ shinyUI(pageWithSidebar(
     							<a href=\"https://github.com/ropensci/rgbif\">rgbif</a>.  This app was built using <a href=\"http://www.rstudio.com/shiny/\">Shiny</a>.  We use <a href=\"http://phylodiversity.net/phylomatic/\">Phylomatic</a> to 
     							generate the phylogeny, so phylogenies are restricted to plants.")),
     
-    helpText(HTML("Bugs? Email us <a href=\"mailto:info@ropensci.org\">here</a>"))
+    helpText(HTML("Bugs? File them <a href=\"https://github.com/ropensci/usgs_app/issues\">here</a>"))
   ),
   
   mainPanel(
