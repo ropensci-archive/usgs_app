@@ -16,16 +16,16 @@ shinyUI(pageWithSidebar(
       HTML("<br>"),
       HTML("<a href=\"https://gist.github.com/SChamberlain/5286615\">Click here for more examples</a>")
     ),
-    
-    wellPanel(
-      h4(strong("ITIS options:")),
-      
-      selectInput(inputId = "locally",
-                  label = HTML("Search ITIS locally with sqlite or using the web API<br> - Running locally should be faster"),
-                  choices = c("ITIS web API","local sqlite3"),
-                  selected = "ITIS web API")
-    ),
-    
+#     
+#     wellPanel(
+#       h4(strong("ITIS options:")),
+#       
+#       selectInput(inputId = "locally",
+#                   label = HTML("Search ITIS locally with sqlite or using the web API<br> - Running locally should be faster"),
+#                   choices = c("ITIS web API","local sqlite3"),
+#                   selected = "ITIS web API")
+#     ),
+#     
     helpText(HTML("This is a submission for the <a href=\"http://applifyingusgsdata.challenge.gov/\">USGS App Challenge</a>")),
     
     helpText(HTML("Data sources: <a href=\"http://www.itis.gov/\">ITIS</a>,
@@ -182,7 +182,7 @@ shinyUI(pageWithSidebar(
 #                       <a href="http://www.gbif.org/">Data from the Global Biodiversity Information Facility API</a><br>
 #                       Interactive map by Ramnath Vaidyanathan - made with <a href="http://ramnathv.github.io/rCharts/">rCharts</a> and <a href="http://leafletjs.com/">Leaflet.js</a>
 #                     </div>'), 
-               plotOutput("map", height="100%", width="100%"),
+               plotOutput("map"),
                HTML('<style type="text/css">
                       footer{position : absolute; bottom : 2%; left : 28%; width: 100%}
                       .row-fluid .span6{width: 80%;}

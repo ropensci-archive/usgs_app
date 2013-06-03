@@ -16,15 +16,16 @@ shinyServer(function(input, output) {
     species <- input$spec
 		species2 <- strsplit(species, ",")[[1]]
 		
-    if(input$locally=="local sqlite3") {
-      locally_choice <- TRUE
-#     conn <- taxize:::sqlite_init(path="/home/ropensci/ShinyApps/usgs/itis2.sqlite")
-      conn <- taxize:::sqlite_init(path="~/github/ropensci/sql/itis2.sqlite")
-    } else {locally_choice <- FALSE}
-   
+#     if(input$locally=="local sqlite3") {
+#       locally_choice <- TRUE
+# #     conn <- taxize:::sqlite_init(path="/home/ropensci/ShinyApps/usgs/itis2.sqlite")
+#       conn <- taxize:::sqlite_init(path="~/github/ropensci/sql/itis2.sqlite")
+#     } else {locally_choice <- FALSE}
+#    
     
     # Get ITIS data
-    tsns <- na.omit(get_tsn(searchterm=species2, searchtype="sciname", locally=locally_choice))
+#     tsns <- na.omit(get_tsn(searchterm=species2, searchtype="sciname", locally=locally_choice))
+    tsns <- na.omit(get_tsn(searchterm=species2, searchtype="sciname"))
     tsns_sp <- data.frame(sp=species2, tsn=as.vector(tsns))
     
     list(tsns, tsns_sp)
@@ -39,48 +40,48 @@ shinyServer(function(input, output) {
 	
 	output$itis_parent <- renderTable(function(){		
 		# get locally choice
-		if(input$locally=="local sqlite3") {
-      locally_choice <- TRUE
-		#     conn <- taxize:::sqlite_init(path="/home/ropensci/ShinyApps/usgs/itis2.sqlite")
-      conn <- taxize:::sqlite_init(path="~/github/ropensci/sql/itis2.sqlite")
-		} else {locally_choice <- FALSE}
+# 		if(input$locally=="local sqlite3") {
+#       locally_choice <- TRUE
+# 		#     conn <- taxize:::sqlite_init(path="/home/ropensci/ShinyApps/usgs/itis2.sqlite")
+#       conn <- taxize:::sqlite_init(path="~/github/ropensci/sql/itis2.sqlite")
+# 		} else {locally_choice <- FALSE}
 		
 		## Get hierarchy up from species
-    if(!locally_choice){
+#     if(!locally_choice){
     	registerDoMC(cores=4)
     	ldply(foo()[[1]], gethierarchyupfromtsn, .parallel=TRUE)
-    } else
-    {
-    	ldply(foo()[[1]], gethierarchyupfromtsn, locally=locally_choice)
-    }
+#     } else
+#     {
+#     	ldply(foo()[[1]], gethierarchyupfromtsn, locally=locally_choice)
+#     }
   })
 	
-	output$itis_syns <- renderTable({
-
-		#     conn <- taxize:::sqlite_init(path="/home/ropensci/ShinyApps/usgs/itis2.sqlite")
-    conn <- taxize:::sqlite_init(path="~/github/ropensci/sql/itis2.sqlite")
-		
-		if(input$locally=="local sqlite3") {locally_choice <- TRUE} else {locally_choice <- FALSE}
-		
-    ## Get synonyms
-    if(!locally_choice){
-    	registerDoMC(cores=4)
-    	itisdata_syns <- ldply(foo()[[1]], getsynonymnamesfromtsn, .parallel=TRUE)[,-1]
-    } else
-    {
-    	getsyns <- function(x){
-    		temp <- getsynonymnamesfromtsn(x, locally=locally_choice)
-    		names(temp)[1] <- "synonym"
-    		data.frame(submittedName = rep(foo()[[2]][foo()[[2]]$tsn%in%x,"sp"],nrow(temp)), temp)
-    	}
-    	ldply(foo()[[1]], getsyns)
-    }
-	})
-	
+# 	output$itis_syns <- renderTable({
+# 
+# 		#     conn <- taxize:::sqlite_init(path="/home/ropensci/ShinyApps/usgs/itis2.sqlite")
+#     conn <- taxize:::sqlite_init(path="~/github/ropensci/sql/itis2.sqlite")
+# 		
+# 		if(input$locally=="local sqlite3") {locally_choice <- TRUE} else {locally_choice <- FALSE}
+# 		
+#     ## Get synonyms
+#     if(!locally_choice){
+#     	registerDoMC(cores=4)
+#     	itisdata_syns <- ldply(foo()[[1]], getsynonymnamesfromtsn, .parallel=TRUE)[,-1]
+#     } else
+#     {
+#     	getsyns <- function(x){
+#     		temp <- getsynonymnamesfromtsn(x, locally=locally_choice)
+#     		names(temp)[1] <- "synonym"
+#     		data.frame(submittedName = rep(foo()[[2]][foo()[[2]]$tsn%in%x,"sp"],nrow(temp)), temp)
+#     	}
+#     	ldply(foo()[[1]], getsyns)
+#     }
+# 	})
+# 	
 	output$rank_names <- renderTable({
 		species <- input$spec
 		species2 <- strsplit(species, ",")[[1]]
-		tax_name(query=species2, get=c("genus", "family", "class", "kingdom"), db="itis")
+		tax_name(query=species2, get=c("genus", "family", "order", "kingdom"), db="ncbi", locally=FALSE)
 	})
 	  
 	bar <- reactive({
@@ -128,7 +129,7 @@ shinyServer(function(input, output) {
 		species2 <- strsplit(species, ",")[[1]]
 		out <- occurrencelist_many(species2, coordinatestatus = TRUE, maxresults = 20, format="darwin", fixnames="change", removeZeros=TRUE)
 		out$taxonName <- capwords(out$taxonName, onlyfirst=TRUE)
-		print( 
+		print(
 		  gbifmap(out, customize = list(
 		    scale_colour_brewer('', palette="Set1"),
 		    theme(legend.key = element_blank(), 
@@ -152,6 +153,6 @@ shinyServer(function(input, output) {
 # 			temp[!temp$decimalLatitude == 0,]
 # 		}
 # 		out <- llply(out, fixdfs)
-	})
+	}, height="auto")
 	
 })
