@@ -16,13 +16,15 @@ shinyServer(function(input, output) {
     species <- input$spec
 		species2 <- strsplit(species, ",")[[1]]
 		
-    if(input$locally=="local sqlite3") {locally_choice <- TRUE} else {locally_choice <- FALSE}
-   
+    if(input$locally=="local sqlite3") {
+      locally_choice <- TRUE
 #     conn <- taxize:::sqlite_init(path="/home/ropensci/ShinyApps/usgs/itis2.sqlite")
-    conn <- taxize:::sqlite_init(path="~/github/ropensci/sql/itis2.sqlite")
+      conn <- taxize:::sqlite_init(path="~/github/ropensci/sql/itis2.sqlite")
+    } else {locally_choice <- FALSE}
+   
     
     # Get ITIS data
-    tsns <- na.omit(get_tsn(searchterm=species2, searchtype="sciname", locally=locally_choice, cn=conn))
+    tsns <- na.omit(get_tsn(searchterm=species2, searchtype="sciname", locally=locally_choice))
     tsns_sp <- data.frame(sp=species2, tsn=as.vector(tsns))
     
     list(tsns, tsns_sp)
@@ -35,13 +37,13 @@ shinyServer(function(input, output) {
 	})
 	
 	
-	output$itis_parent <- renderTable(function(){
-
-		#     conn <- taxize:::sqlite_init(path="/home/ropensci/ShinyApps/usgs/itis2.sqlite")
-    conn <- taxize:::sqlite_init(path="~/github/ropensci/sql/itis2.sqlite")
-		
+	output$itis_parent <- renderTable(function(){		
 		# get locally choice
-		if(input$locally=="local sqlite3") {locally_choice <- TRUE} else {locally_choice <- FALSE}
+		if(input$locally=="local sqlite3") {
+      locally_choice <- TRUE
+		#     conn <- taxize:::sqlite_init(path="/home/ropensci/ShinyApps/usgs/itis2.sqlite")
+      conn <- taxize:::sqlite_init(path="~/github/ropensci/sql/itis2.sqlite")
+		} else {locally_choice <- FALSE}
 		
 		## Get hierarchy up from species
     if(!locally_choice){
@@ -49,7 +51,7 @@ shinyServer(function(input, output) {
     	ldply(foo()[[1]], gethierarchyupfromtsn, .parallel=TRUE)
     } else
     {
-    	ldply(foo()[[1]], gethierarchyupfromtsn, locally=locally_choice, sqlconn = conn)
+    	ldply(foo()[[1]], gethierarchyupfromtsn, locally=locally_choice)
     }
   })
 	
@@ -67,7 +69,7 @@ shinyServer(function(input, output) {
     } else
     {
     	getsyns <- function(x){
-    		temp <- getsynonymnamesfromtsn(x, locally=locally_choice, sqlconn = conn)
+    		temp <- getsynonymnamesfromtsn(x, locally=locally_choice)
     		names(temp)[1] <- "synonym"
     		data.frame(submittedName = rep(foo()[[2]][foo()[[2]]$tsn%in%x,"sp"],nrow(temp)), temp)
     	}
@@ -78,7 +80,7 @@ shinyServer(function(input, output) {
 	output$rank_names <- renderTable({
 		species <- input$spec
 		species2 <- strsplit(species, ",")[[1]]
-		tax_name(query=species2, get=c("genus", "family", "class", "kingdom"), db="itis", locally=TRUE, cn=conn)
+		tax_name(query=species2, get=c("genus", "family", "class", "kingdom"), db="itis")
 	})
 	  
 	bar <- reactive({
@@ -98,6 +100,7 @@ shinyServer(function(input, output) {
 		species2 <- strsplit(species, ",")[[1]]
 		
 		# Make phylogeny
+    locally=FALSE
 		registerDoMC(cores=4)
 		phylog <- phylomatic_tree(taxa=species2, get = 'POST', informat='newick', method = "phylomatic",
 															storedtree = "R20120829", taxaformat = "slashpath", outformat = "newick", clean = "true", parallel=TRUE)
@@ -123,22 +126,32 @@ shinyServer(function(input, output) {
 	output$map <- renderPlot({
 		species <- input$spec
 		species2 <- strsplit(species, ",")[[1]]
-		
+		out <- occurrencelist_many(species2, coordinatestatus = TRUE, maxresults = 20, format="darwin", fixnames="change", removeZeros=TRUE)
+		out$taxonName <- capwords(out$taxonName, onlyfirst=TRUE)
+		print( 
+		  gbifmap(out, customize = list(
+		    scale_colour_brewer('', palette="Set1"),
+		    theme(legend.key = element_blank(), 
+		          legend.position = 'bottom', 
+		          plot.background = element_rect(colour="grey"),
+		          panel.border = element_blank()),
+		    scale_x_continuous(expand=c(0,0)),
+		    scale_y_continuous(expand=c(0,0)),
+		    guides(colour=guide_legend(override.aes = list(size = 5), nrow=2))
+		  )) 
+		)
 		# Make map
-		registerDoMC(cores=4)
-		out <- llply(species2, function(x) occurrencelist(x, coordinatestatus = TRUE, maxresults = 100, fixnames="changealltoorig", removeZeros=TRUE), .parallel=TRUE)
-		fixdfs <- function(x){
-			temp <- x[!is.na(x$decimalLatitude) == TRUE,]
-			temp$decimalLatitude <- as.numeric(temp$decimalLatitude)
-			temp$decimalLongitude <- as.numeric(temp$decimalLongitude)
-			temp[!temp$decimalLatitude == 0,]
-		}
-		out <- llply(out, fixdfs)
-		print( gbifmap(out, customize = list( 
-			scale_colour_brewer(type="div", palette = 7),
-			theme(legend.key	= element_blank(), plot.background = element_rect(colour="grey")),
-			guides(colour=guide_legend(override.aes = list(size = 5)))
-		)) )
+# 		out2 <- out2[,c("taxonName","county","decimalLatitude","decimalLongitude","institutionCode","collectionCode","catalogNumber","basisOfRecordString","collector")]
+# 		out <- getdata(out, FALSE)
+# 		registerDoMC(cores=4)
+# 		out <- llply(species2, function(x) occurrencelist(x, coordinatestatus = TRUE, maxresults = 100, fixnames="changealltoorig", removeZeros=TRUE), .parallel=TRUE)
+# 		fixdfs <- function(x){
+# 			temp <- x[!is.na(x$decimalLatitude) == TRUE,]
+# 			temp$decimalLatitude <- as.numeric(temp$decimalLatitude)
+# 			temp$decimalLongitude <- as.numeric(temp$decimalLongitude)
+# 			temp[!temp$decimalLatitude == 0,]
+# 		}
+# 		out <- llply(out, fixdfs)
 	})
 	
 })
