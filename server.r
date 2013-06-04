@@ -36,25 +36,33 @@ shinyServer(function(input, output) {
 		species2 <- strsplit(species, ",")[[1]]
 		tnrs(species2, getpost="POST", source_ = "NCBI")[,1:5]
 	})
+  
+	output$itis_children <- renderTable({
+	  species <- input$spec
+	  species2 <- strsplit(species, ",")[[1]]
+	  downto <- input$downto
+    registerDoMC(cores=4)
+	  out <- llply(species2, function(x) col_downstream(name = x, downto = downto)[[1]], .parallel=TRUE)
+    ldply(out)
+	})
 	
-	
-	output$itis_parent <- renderTable(function(){		
-		# get locally choice
-# 		if(input$locally=="local sqlite3") {
-#       locally_choice <- TRUE
-# 		#     conn <- taxize:::sqlite_init(path="/home/ropensci/ShinyApps/usgs/itis2.sqlite")
-#       conn <- taxize:::sqlite_init(path="~/github/ropensci/sql/itis2.sqlite")
-# 		} else {locally_choice <- FALSE}
-		
-		## Get hierarchy up from species
-#     if(!locally_choice){
-    	registerDoMC(cores=4)
-    	ldply(foo()[[1]], gethierarchyupfromtsn, .parallel=TRUE)
-#     } else
-#     {
-#     	ldply(foo()[[1]], gethierarchyupfromtsn, locally=locally_choice)
-#     }
-  })
+# 	output$itis_parent <- renderTable(function(){		
+# 		# get locally choice
+# # 		if(input$locally=="local sqlite3") {
+# #       locally_choice <- TRUE
+# # 		#     conn <- taxize:::sqlite_init(path="/home/ropensci/ShinyApps/usgs/itis2.sqlite")
+# #       conn <- taxize:::sqlite_init(path="~/github/ropensci/sql/itis2.sqlite")
+# # 		} else {locally_choice <- FALSE}
+# 		
+# 		## Get hierarchy up from species
+# #     if(!locally_choice){
+#     	registerDoMC(cores=4)
+#     	ldply(foo()[[1]], gethierarchyupfromtsn, .parallel=TRUE)
+# #     } else
+# #     {
+# #     	ldply(foo()[[1]], gethierarchyupfromtsn, locally=locally_choice)
+# #     }
+#   })
 	
 # 	output$itis_syns <- renderTable({
 # 
@@ -125,9 +133,10 @@ shinyServer(function(input, output) {
 	})
 	
 	output$map <- renderPlot({
+	  num_occurrs <- input$numocc
 		species <- input$spec
 		species2 <- strsplit(species, ",")[[1]]
-		out <- occurrencelist_many(species2, coordinatestatus = TRUE, maxresults = 20, format="darwin", fixnames="change", removeZeros=TRUE)
+		out <- occurrencelist_many(species2, coordinatestatus = TRUE, maxresults = num_occurrs, format="darwin", fixnames="change", removeZeros=TRUE)
 		out$taxonName <- capwords(out$taxonName, onlyfirst=TRUE)
 		print(
 		  gbifmap(out, customize = list(
@@ -154,5 +163,15 @@ shinyServer(function(input, output) {
 # 		}
 # 		out <- llply(out, fixdfs)
 	}, height="auto")
+  
+	output$downloadData <- downloadHandler(
+	  filename = 'data.csv',
+	  #     content = function(file) { write.csv(mtcars, file) }
+	  content = function(file) { write.csv(mtcars, file) }
+	)
+	
+	output$cbt <- reactiveText(function(){})
+  
+	outputOptions(output, 'downloadData', suspendWhenHidden=FALSE)
 	
 })
