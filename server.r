@@ -3,23 +3,22 @@ require(rCharts)
 library(taxize)
 
 shinyServer(function(input, output){
+
+  # factor out code common to all functions.
+  species2 <- reactive({
+    strsplit(input$spec, ",")[[1]];
+  })
   
   output$tnrs <- renderTable({
-    species <- input$spec
-    species2 <- strsplit(species, ",")[[1]]
-    tnrs(species2, getpost="POST", source_ = "NCBI")[,1:5]
+    tnrs(species2(), getpost="POST", source_ = "NCBI")[,1:5]
   })
   
   output$rank_names <- renderTable({
-    species <- input$spec
-    species2 <- strsplit(species, ",")[[1]]
-    tax_name(query=species2, get=c("genus", "family", "order", "kingdom"), db="ncbi")
+    tax_name(query=species2(), get=c("genus", "family", "order", "kingdom"), db="ncbi")
   })
   
   bar <- reactive({
-    species <- input$spec
-    species2 <- strsplit(species, ",")[[1]]
-    df <- gisd_isinvasive(x=species2, simplify=TRUE)
+    df <- gisd_isinvasive(x=species2(), simplify=TRUE)
     df$status <- gsub("Not in GISD", "Not Invasive", df$status)
     df
   })
@@ -33,12 +32,10 @@ shinyServer(function(input, output){
     require(ggphylo)
     require(doMC)
     
-    species <- input$spec
-    species2 <- strsplit(species, ",")[[1]]
     
     # Make phylogeny
     registerDoMC(cores=4)
-    phylog <- phylomatic_tree(taxa=species2, get = 'POST', informat='newick', method = "phylomatic",
+    phylog <- phylomatic_tree(taxa=species2(), get = 'POST', informat='newick', method = "phylomatic",
                               storedtree = "R20120829", taxaformat = "slashpath", outformat = "newick", clean = "true", parallel=TRUE)
     phylog$tip.label <- capwords(phylog$tip.label)
     
@@ -59,10 +56,6 @@ shinyServer(function(input, output){
     print(p)
   })
   
-  rcharts_data <- reactive({
-    rcharts_prep(sppchar = input$spec, occurrs = input$numocc, 
-      palette_name = get_palette(input$palette), popup = TRUE)  
-  })
   
   rgbif_data <- reactive({
     rcharts_prep1(sppchar = input$spec, occurrs = input$numocc)
@@ -79,8 +72,7 @@ shinyServer(function(input, output){
   
   output$papers <- renderText({
     require(rplos); require(xtable); require(plyr)
-    species2 <- strsplit(input$spec, ",")[[1]]
-    dat <- llply(species2, function(x) searchplos(x, fields='id,journal,title', limit = input$paperlim, key='WQcDSXml2VSWx3P')[,-4])
+    dat <- llply(species2(), function(x) searchplos(x, fields='id,journal,title', limit = input$paperlim, key='WQcDSXml2VSWx3P')[,-4])
     names(dat) <- species2
     dat <- ldply(dat)
     dat$id <- paste0("<a href='http://macrodocs.org/?doi=", dat$id, "' target='_blank'> <i class='icon-book'></i> </a>")
