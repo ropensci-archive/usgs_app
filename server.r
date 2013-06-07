@@ -100,7 +100,18 @@ shinyServer(function(input, output){
     require(taxize)
     require(rgbif)
     require(RColorBrewer)
+
+	  colours_ <- data.frame(actual=c("Blues","BuGn","BuPu","GnBu","Greens","Greys","Oranges","OrRd","PuBu",
+                                    "PuBuGn","PuRd","Purples","RdPu","Reds","YlGn","YlGnBu","YlOrBr","YlOrRd",
+                                    "BrBG","PiYG","PRGn","PuOr","RdBu","RdGy","RdYlBu","RdYlGn","Spectral"),
+	             choices=c("Blues","BlueGreen","BluePurple","GreenBlue","Greens","Greys","Oranges","OrangeRed",
+                         "PurpleBlue","PurpleBlueGreen","PurpleRed","Purples",
+                         "RedPurple","Reds","YellowGreen","YellowGreenBlue","YellowOrangeBrown","YellowOrangeRed",
+	                       "BrownToGreen","PinkToGreen","PurpleToGreen","PurpleToOrange","RedToBlue","RedToGrey",
+                         "RedYellowBlue","RedYellowGreen","Spectral"))
 	  
+	  mycolor <- as.character(colours_[colours_$choices %in% input$palette, "actual"])
+    
     rcharts_prep <- function(sppchar, occurrs, palette_name, popup=FALSE){
       
       # prepare occurrence data
@@ -130,7 +141,7 @@ shinyServer(function(input, output){
       return( out_list2 )
 	  }
 	  
-    rcharts_data <- rcharts_prep(sppchar = input$spec, occurrs = input$numocc, palette_name = input$palette, popup = TRUE)
+    rcharts_data <- rcharts_prep(sppchar = input$spec, occurrs = input$numocc, palette_name = mycolor, popup = TRUE)
     
     toGeoJSON <- function(list_, lat = 'latitude', lon = 'longitude'){
       x = lapply(list_, function(l){
@@ -176,15 +187,15 @@ shinyServer(function(input, output){
     gbifmap2(input = rcharts_data, input$provider)
 	})
   
-	output$chart2 <- renderMap({
-	  require(rCharts)
-	  map3 <- Leaflet$new()
-	  map3$setView(c(51.505, -0.09), zoom = 13)
-	  map3$tileLayer(provider = input$provider, urlTemplate = NULL)
-	  map3$marker(c(51.5, -0.09), bindPopup = "<p> Hi. I am a popup </p>")
-	  map3$marker(c(51.495, -0.083), bindPopup = "<p> Hi. I am another popup </p>")
-	  map3
-	})
+	# output$chart2 <- renderMap({
+	#   require(rCharts)
+	#   map3 <- Leaflet$new()
+	#   map3$setView(c(51.505, -0.09), zoom = 13)
+	#   map3$tileLayer(provider = input$provider, urlTemplate = NULL)
+	#   map3$marker(c(51.5, -0.09), bindPopup = "<p> Hi. I am a popup </p>")
+	#   map3$marker(c(51.495, -0.083), bindPopup = "<p> Hi. I am another popup </p>")
+	#   map3
+	# })
   
   output$papers <- renderText({
     require(rplos)

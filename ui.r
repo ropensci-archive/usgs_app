@@ -55,8 +55,8 @@ shinyUI(pageWithSidebar(
       sliderInput(inputId="numocc", label="Select max. number of occurrences to search for per species", min=0, max=500, value=50),
       # color palette for map
       selectInput(inputId="palette", label="Select color palette", 
-                  choices=c("Blues","BuGn","BuPu","GnBu","Greens","Greys","Oranges","OrRd","PuBu","PuBuGn","PuRd","Purples","RdPu","Reds","YlGn","YlGnBu","YlOrBr","YlOrRd
-                            BrBG","PiYG","PRGn","PuOr","RdBu","RdGy","RdYlBu","RdYlGn","Spectral"), selected="Blues"),
+                  choices=c("Blues","BlueGreen","BluePurple","GreenBlue","Greens","Greys","Oranges","OrangeRed","PurpleBlue","PurpleBlueGreen","PurpleRed","Purples","RedPurple","Reds","YellowGreen","YellowGreenBlue","YlOrBr","YellowOrangeRed",
+                            "BrownToGreen","PinkToGreen","PurpleToGreen","PurpleToOrange","RedToBlue","RedToGrey","RedYellowBlue","RedYellowGreen","Spectral"), selected="Blues"),
       selectInput('provider', 'Select map provider for interactive map', 
                   choices = c("OpenStreetMap.Mapnik","OpenStreetMap.BlackAndWhite","OpenStreetMap.DE","OpenCycleMap","Thunderforest.OpenCycleMap","Thunderforest.Transport","Thunderforest.Landscape","MapQuestOpen.OSM","MapQuestOpen.Aerial","Stamen.Toner","Stamen.TonerBackground","Stamen.TonerHybrid","Stamen.TonerLines","Stamen.TonerLabels","Stamen.TonerLite","Stamen.Terrain","Stamen.Watercolor","Esri.WorldStreetMap","Esri.DeLorme","Esri.WorldTopoMap","Esri.WorldImagery","Esri.WorldTerrain","Esri.WorldShadedRelief","Esri.WorldPhysical","Esri.OceanBasemap","Esri.NatGeoWorldMap","Esri.WorldGrayCanvas","Acetate.all","Acetate.basemap","Acetate.terrain","Acetate.foreground","Acetate.roads","Acetate.labels","Acetate.hillshading"),
                   selected = 'MapQuestOpen.OSM'
@@ -79,6 +79,8 @@ shinyUI(pageWithSidebar(
     ),
     
     sliderInput(inputId="paperlim", label="Number of papers to return", min=1, max=50, value=10, step=1, ticks=TRUE),
+    
+    submitButton(text="Submit"),
     
     wellPanel(
       HTML('
