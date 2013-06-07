@@ -80,8 +80,6 @@ shinyUI(pageWithSidebar(
     
     sliderInput(inputId="paperlim", label="Number of papers to return", min=1, max=50, value=10, step=1, ticks=TRUE),
     
-    submitButton(text="Submit"),
-    
     wellPanel(
       HTML('
            <h4>About this site <a href="#infoModal" role="button" class="btn btn-info" data-toggle="modal" style="float:right"><i class="icon-info-sign icon-white"></i></a></h4>

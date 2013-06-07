@@ -10,17 +10,6 @@ shinyServer(function(input, output){
     tnrs(species2, getpost="POST", source_ = "NCBI")[,1:5]
   })
   
-#   output$itis_children <- renderTable({
-#     require(doMC)
-#     
-#     species <- input$spec
-#     species2 <- strsplit(species, ",")[[1]]
-#     downto <- input$downto
-#     registerDoMC(cores=4)
-#     out <- llply(species2, function(x) col_downstream(name = x, downto = downto)[[1]], .parallel=TRUE)
-#     print(ldply(out))
-#   })
-  
   output$rank_names <- renderTable({
     species <- input$spec
     species2 <- strsplit(species, ",")[[1]]
@@ -70,132 +59,23 @@ shinyServer(function(input, output){
     print(p)
   })
   
-  # Regular ggplot2 map
-#   output$map <- renderPlot({
-#     require(rgbif)
-#     require(ggplot2)
-#     
-#     num_occurrs <- input$numocc
-#     species <- input$spec
-#     species2 <- strsplit(species, ",")[[1]]
-#     out <- occurrencelist_many(species2, coordinatestatus = TRUE, maxresults = num_occurrs, format="darwin", fixnames="change", removeZeros=TRUE)
-#     out$taxonName <- capwords(out$taxonName, onlyfirst=TRUE)
-#     print(
-#       gbifmap(out, customize = list(
-#         scale_colour_brewer('', palette=input$palette),
-#         theme(legend.key = element_blank(), 
-#               legend.position = 'bottom', 
-#               plot.background = element_rect(colour="grey"),
-#               panel.border = element_blank()),
-#         scale_x_continuous(expand=c(0,0)),
-#         scale_y_continuous(expand=c(0,0)),
-#         guides(colour=guide_legend(override.aes = list(size = 5), nrow=2))
-#       )) 
-#     )
-#   })
+  rcharts_data <- reactive({
+    rcharts_prep(sppchar = input$spec, occurrs = input$numocc, 
+      palette_name = get_palette(input$palette), popup = TRUE)  
+  })
+  
+  rgbif_data <- reactive({
+    rcharts_prep1(sppchar = input$spec, occurrs = input$numocc)
+  })
+  
+  rcharts_data <- reactive({
+    rcharts_prep2(rgbif_data(), palette_name = get_palette(input$palette), popup = TRUE)
+  })
   
   # Interactive rCharts map (thanks Ramnath)
-	output$map_rcharts <- renderMap({
-	  require(rCharts)
-    require(taxize)
-    require(rgbif)
-    require(RColorBrewer)
-
-	  colours_ <- data.frame(actual=c("Blues","BuGn","BuPu","GnBu","Greens","Greys","Oranges","OrRd","PuBu",
-                                    "PuBuGn","PuRd","Purples","RdPu","Reds","YlGn","YlGnBu","YlOrBr","YlOrRd",
-                                    "BrBG","PiYG","PRGn","PuOr","RdBu","RdGy","RdYlBu","RdYlGn","Spectral"),
-	             choices=c("Blues","BlueGreen","BluePurple","GreenBlue","Greens","Greys","Oranges","OrangeRed",
-                         "PurpleBlue","PurpleBlueGreen","PurpleRed","Purples",
-                         "RedPurple","Reds","YellowGreen","YellowGreenBlue","YellowOrangeBrown","YellowOrangeRed",
-	                       "BrownToGreen","PinkToGreen","PurpleToGreen","PurpleToOrange","RedToBlue","RedToGrey",
-                         "RedYellowBlue","RedYellowGreen","Spectral"))
-	  
-	  mycolor <- as.character(colours_[colours_$choices %in% input$palette, "actual"])
-    
-    rcharts_prep <- function(sppchar, occurrs, palette_name, popup=FALSE){
-      
-      # prepare occurrence data
-	    species2 <- strsplit(sppchar, ",")[[1]]
-	    out <- occurrencelist_many(species2, coordinatestatus = TRUE, maxresults = occurrs, 
-                                 format="darwin", fixnames="change", removeZeros=TRUE)
-	    out$taxonName <- capwords(out$taxonName, onlyfirst=TRUE)
-	    out <- out[,c("taxonName","county","decimalLatitude","decimalLongitude","institutionCode","collectionCode","catalogNumber","basisOfRecordString","collector")]
-      
-      # colors
-	    num_colours <- length(unique(out$taxonName))
-      mycolors <- brewer.pal(num_colours, palette_name)
-        
-	    out2 <- mutate(out, 
-	                   taxonName = as.factor(taxonName),
-	                   fillColor = mycolors[as.numeric(taxonName)]
-	    )
-	    out_list2 <- apply(out2, 1, as.list)
-      
-      # popup
-      if(popup)
-        out_list2 <- lapply(out_list2, function(l){
-          l$popup = paste(paste("<b>", names(l), ": </b>", l, "<br/>"), collapse = '\n')
-          return(l)
-        })
-      
-      return( out_list2 )
-	  }
-	  
-    rcharts_data <- rcharts_prep(sppchar = input$spec, occurrs = input$numocc, palette_name = mycolor, popup = TRUE)
-    
-    toGeoJSON <- function(list_, lat = 'latitude', lon = 'longitude'){
-      x = lapply(list_, function(l){
-        if (is.null(l[[lat]]) || is.null(l[[lon]])){
-          return(NULL)
-        }
-        list(
-          type = 'Feature',
-          geometry = list(
-            type = 'Point',
-            coordinates = as.numeric(c(l[[lon]], l[[lat]]))
-          ),
-          properties = l[!(names(l) %in% c(lat, lon))]
-        )
-      })
-      setNames(Filter(function(x) !is.null(x), x), NULL)
-    }
-    
-    gbifmap2 <- function(input = NULL, map_provider = 'MapQuestOpen.OSM', map_zoom = 2){
-      input <- Filter(function(x) !is.na(x$decimalLatitude), input)
-      L1 <- Leaflet$new()
-      L1$tileLayer(provider = map_provider, urlTemplate = NULL)
-
-      L1$set(height = 800, width = 1600)
-      L1$setView(c(30, -73.90), map_zoom)
-      L1$geoJson(toGeoJSON(input, lat = 'decimalLatitude', lon = 'decimalLongitude'), 
-                 onEachFeature = '#! function(feature, layer){
-      layer.bindPopup(feature.properties.popup || feature.properties.taxonName)
-    } !#',
-    pointToLayer =  "#! function(feature, latlng){
-       return L.circleMarker(latlng, {
-        radius: 4,
-        fillColor: feature.properties.fillColor || 'red',    
-        color: '#000',
-        weight: 1,
-        fillOpacity: 0.8
-      })
-    } !#"
-      )
-      return(L1)
-    }    
-    
-    gbifmap2(input = rcharts_data, input$provider)
+	output$map_rcharts <- renderMap({  
+    gbifmap2(input = rcharts_data(), input$provider)
 	})
-  
-	# output$chart2 <- renderMap({
-	#   require(rCharts)
-	#   map3 <- Leaflet$new()
-	#   map3$setView(c(51.505, -0.09), zoom = 13)
-	#   map3$tileLayer(provider = input$provider, urlTemplate = NULL)
-	#   map3$marker(c(51.5, -0.09), bindPopup = "<p> Hi. I am a popup </p>")
-	#   map3$marker(c(51.495, -0.083), bindPopup = "<p> Hi. I am another popup </p>")
-	#   map3
-	# })
   
   output$papers <- renderText({
     require(rplos)
@@ -210,15 +90,4 @@ shinyServer(function(input, output){
     g <- print(xtable(dat), include.rownames = FALSE, type = "html")
     gsub("\n", "", gsub("&gt ", ">", gsub("&lt ", "<", g)))
   })
-  
-	output$downloadData <- downloadHandler(
-	  filename = 'data.csv',
-	  #     content = function(file) { write.csv(mtcars, file) }
-	  content = function(file) { write.csv(mtcars, file) }
-	)
-	
-	output$cbt <- renderText(function(){})
-  
-	outputOptions(output, 'downloadData', suspendWhenHidden=FALSE)
-	
 })
