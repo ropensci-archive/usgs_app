@@ -189,8 +189,9 @@ shinyServer(function(input, output){
   output$papers <- renderText({
     require(rplos)
     require(xtable)
+    require(plyr)
     species2 <- strsplit(input$spec, ",")[[1]]
-    dat <- llply(species2, function(x) searchplos(x, fields='id,journal,title', limit = input$paperlim)[,-4])
+    dat <- llply(species2, function(x) searchplos(x, fields='id,journal,title', limit = input$paperlim, key=)[,-4])
     names(dat) <- species2
     dat <- ldply(dat)
     dat$id <- paste0("<a href='http://macrodocs.org/?doi=", dat$id, "' target='_blank'> <i class='icon-book'></i> </a>")
