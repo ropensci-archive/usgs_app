@@ -1,136 +1,116 @@
-library(shiny)
-
-# includeHTML(path="www/js/usgs_app_data.js")
+require(shiny)
+require(rCharts)
 
 shinyUI(pageWithSidebar(
-
+  
   headerPanel(title=HTML("TaxaViewer - <i>Species exploration</i> "), windowTitle="TaxaViewer"),
   
   sidebarPanel(
     
     HTML('<style type="text/css">
-            .row-fluid .span4{width: 26%;}
-          </style>'),
+         .row-fluid .span4{width: 26%;}
+         .leaflet {height: 600px; width: 1200px;}
+         </style>'),
     
     wellPanel(
-#       h4(strong("Input taxon names:")),      
-#       HTML("<br>"),
-#       HTML("<a href=\"https://gist.github.com/SChamberlain/5286615\">Click here for more examples</a>")
       HTML('
-            <h5><strong>Input taxon names:</strong><a href="#egsModal" role="badge" class="badge" data-toggle="modal" style="float:right;"><i class="icon-question-sign icon-white"></i></a></h5>
-
-            <!-- Modal -->
-            <div id="egsModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-              <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                <h3 id="myModalLabel">Examples</h3>
-              </div>
-              <div class="modal-body">
-The main interface is always inputting scientific names. Paste the below strings in exactly as they are. Here are a few examples:
-<br><br>
-<ul>
-<li><strong>Example 1, correctly spelled names</strong></li>
-Carpobrotus edulis,Rosmarinus officinalis,Ageratina riparia
-<br><br>
-<li><strong>Example 2, incorrectly spelled names</strong></li>
-Carpobrotus eduliss,Rosmarinas officinalis,Ageratina riparia
-<br><br>
-<li><strong>Example 3, longer string of names</strong></li>
-Bidens pilosa,Ageratina riparia,Poa annua,Ageratina adenophora,Aegilops triuncialis,Agrostis capillaris,Cinchona pubescens,Pinus contorta
-</ul>
-              </div>
-            </div>
+           <h5><strong>Input taxon names:</strong><a href="#egsModal" role="badge" class="badge" data-toggle="modal" style="float:right;"><i class="icon-question-sign icon-white"></i></a></h5>
+           
+           <!-- Modal -->
+           <div id="egsModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+           <div class="modal-header">
+           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+           <h3 id="myModalLabel">Examples</h3>
+           </div>
+           <div class="modal-body">
+           The main interface is always inputting scientific names. Paste the below strings in exactly as they are. Here are a few examples:
+           <br><br>
+           <ul>
+           <li><strong>Example 1, correctly spelled names</strong></li>
+           Carpobrotus edulis,Rosmarinus officinalis,Ageratina riparia
+           <br><br>
+           <li><strong>Example 2, incorrectly spelled names</strong></li>
+           Carpobrotus eduliss,Rosmarinas officinalis,Ageratina riparia
+           <br><br>
+           <li><strong>Example 3, longer string of names</strong></li>
+           Bidens pilosa,Ageratina riparia,Poa annua,Ageratina adenophora,Aegilops triuncialis,Agrostis capillaris,Cinchona pubescens,Pinus contorta
+           </ul>
+           </div>
+           </div>
            '),
-#       HTML("<br>"),
+      #       HTML("<br>"),
       HTML('<textarea id="spec" rows="3" cols="50">Carpobrotus edulis,Rosmarinus officinalis,Ageratina riparia</textarea>')
-    ),
+      ),
     
-    wellPanel(
-      h5(strong("Downstream options:")),
-      selectInput(inputId="downto", label="Select taxonomic level to retrieve", choices=c("Class","Order","Family","Genus","Species"), selected="Species")
-    ),
-    
+    # downstream options for ITIS Children tab
+#     wellPanel(
+#       h5(strong("Downstream options:")),
+#       selectInput(inputId="downto", label="Select taxonomic level to retrieve", choices=c("Class","Order","Family","Genus","Species"), selected="Species")
+#     ),
+#     
+    # Map options 
     wellPanel(
       h5(strong("Map options:")),
-      sliderInput(inputId="numocc", label="Select max. number of occurrences to search for per species", min=0, max=1000, value=100)
-    ),
-#     wellPanel(
-#       HTML('<textarea id="thing" class="sciname" type="text" placeholder="sciname"></textarea>')
-#     ),
+      # number of occurrences for map
+      sliderInput(inputId="numocc", label="Select max. number of occurrences to search for per species", min=0, max=500, value=50),
+      # color palette for map
+      selectInput(inputId="palette", label="Select color palette", 
+                  choices=c("Blues","BuGn","BuPu","GnBu","Greens","Greys","Oranges","OrRd","PuBu","PuBuGn","PuRd","Purples","RdPu","Reds","YlGn","YlGnBu","YlOrBr","YlOrRd
+                            BrBG","PiYG","PRGn","PuOr","RdBu","RdGy","RdYlBu","RdYlGn","Spectral"), selected="Blues"),
+      selectInput('provider', 'Select map provider for interactive map', 
+                  choices = c("OpenStreetMap.Mapnik","OpenStreetMap.BlackAndWhite","OpenStreetMap.DE","OpenCycleMap","Thunderforest.OpenCycleMap","Thunderforest.Transport","Thunderforest.Landscape","MapQuestOpen.OSM","MapQuestOpen.Aerial","Stamen.Toner","Stamen.TonerBackground","Stamen.TonerHybrid","Stamen.TonerLines","Stamen.TonerLabels","Stamen.TonerLite","Stamen.Terrain","Stamen.Watercolor","Esri.WorldStreetMap","Esri.DeLorme","Esri.WorldTopoMap","Esri.WorldImagery","Esri.WorldTerrain","Esri.WorldShadedRelief","Esri.WorldPhysical","Esri.OceanBasemap","Esri.NatGeoWorldMap","Esri.WorldGrayCanvas","Acetate.all","Acetate.basemap","Acetate.terrain","Acetate.foreground","Acetate.roads","Acetate.labels","Acetate.hillshading"),
+                  selected = 'MapQuestOpen.OSM'
+      ),
+      HTML('
+            <a href="#providersModal" role="badge" class="badge" data-toggle="modal" style="float:right;"><i class="icon-question-sign icon-white"></i></a>
 
+          <!-- Modal -->
+           <div id="providersModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="providersModal" aria-hidden="true">
+           <div class="modal-header">
+           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+           <h3 id="providersModal">Map options</h3>
+           </div>
+           <div class="modal-body">
+           <h3>See here <a href="http://leaflet-extras.github.io/leaflet-providers/" target="_blank">http://leaflet-extras.github.io/leaflet-providers/</a> for your options</h3>
+           </ul>
+           </div>
+           </div>
+           ')
+    ),
     
-#     wellPanel(
-#       selectInput(inputId="sciname", label="thign butt", choices = )
-#       HTML('
-#             <div class="typeahead-wrapper" width="200">
-#                 <textarea class="sciname" type="text" placeholder="sciname"></textarea>
-#             </div>')
-#       textInput(inputId = "tool", label = "Tool:", value = "sciname")
-#       HTML('
-#           <select id="tool" style="width:100px"></select>
-#            ')
-#     ),
+    sliderInput(inputId="paperlim", label="Number of papers to return", min=1, max=50, value=10, step=1, ticks=TRUE),
     
-#     wellPanel(
-#       h4(strong("ITIS options:")),
-#       
-#       selectInput(inputId = "locally",
-#                   label = HTML("Search ITIS locally with sqlite or using the web API<br> - Running locally should be faster"),
-#                   choices = c("ITIS web API","local sqlite3"),
-#                   selected = "ITIS web API")
-#     ),
-#     
     wellPanel(
-    HTML('
-      <a href="#infoModal" role="button" class="btn btn-info" data-toggle="modal" style="float:left"><i class="icon-info-sign icon-white"></i></a>
-
-      <!-- Modal -->
-      <div id="infoModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-          <h3 id="myModalLabel">About this app</h3>
-        </div>
-        <div class="modal-body">
-This is a submission for the <a href=\"http://applifyingusgsdata.challenge.gov/\">USGS App Challenge</a><br>
-<br>
-Data sources include: <a href=\"http://www.itis.gov/\">ITIS</a>, <a href=\"http://api.phylotastic.org/tnrs\">Phylotastic</a>, <a href=\"http://www.issg.org/database/welcome/\">Global Invasive Species Database</a>, <a href=\"http://phylodiversity.net/phylomatic/\">Phylomatic</a>, and <a href=\"http://www.gbif.org/\">GBIF</a>"
-<br><br>
-Source code for this app available on <a href=\"https://github.com/ropensci/usgs_app\">Github</a>. Created by rOpenSci. Vist <a href=\"http://ropensci.org/\">our website</a> to explore our R packages and tutorials. Get the R packages: <a href=\"https://github.com/ropensci/taxize_\">taxize</a>, <a href=\"https://github.com/ropensci/rgbif\">rgbif</a>.  This app was built using <a href=\"http://www.rstudio.com/shiny/\">Shiny</a>.  We use <a href=\"http://phylodiversity.net/phylomatic/\">Phylomatic</a> to generate the phylogeny, so phylogenies are restricted to plants.
-<br><br>
-Bugs? File them <a href=\"https://github.com/ropensci/usgs_app/issues\">here</a>
-        </div>
-      </div>
-         ')
-    )
+      HTML('
+           <h4>About this site <a href="#infoModal" role="button" class="btn btn-info" data-toggle="modal" style="float:right"><i class="icon-info-sign icon-white"></i></a></h4>
+           
+           <!-- Modal -->
+           <div id="infoModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+           <div class="modal-header">
+           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+           <h3 id="myModalLabel">About this app</h3>
+           </div>
+           <div class="modal-body">
+           This is a submission for the <a href=\"http://applifyingusgsdata.challenge.gov/\" target="_blank">USGS App Challenge</a><br>
+           <br>
+           Data sources include: <a href=\"http://www.itis.gov/\" target="_blank">ITIS</a>, <a href=\"http://api.phylotastic.org/tnrs\" target="_blank">Phylotastic</a>, <a href=\"http://www.issg.org/database/welcome/\" target="_blank">Global Invasive Species Database</a>, <a href=\"http://phylodiversity.net/phylomatic/\">Phylomatic</a>, and <a href=\"http://www.gbif.org/\">GBIF</a>"
+           <br><br>
+           Source code for this app available on <a href=\"https://github.com/ropensci/usgs_app\" target="_blank">Github</a>. Created by rOpenSci. Vist <a href=\"http://ropensci.org/\" target="_blank">our website</a> to explore our R packages and tutorials. Get the R packages: <a href=\"https://github.com/ropensci/taxize_\">taxize</a>, <a href=\"https://github.com/ropensci/rgbif\">rgbif</a>.  This app was built using <a href=\"http://www.rstudio.com/shiny/\">Shiny</a>.  We use <a href=\"http://phylodiversity.net/phylomatic/\">Phylomatic</a> to generate the phylogeny, so phylogenies are restricted to plants.
+           <br><br>
+           Bugs? File them <a href=\"https://github.com/ropensci/usgs_app/issues\" target="_blank">here</a>
+           </div>
+           </div>
+           ')
+      )
     
-#     helpText(HTML("This is a submission for the <a href=\"http://applifyingusgsdata.challenge.gov/\">USGS App Challenge</a>")),
-#     
-#     helpText(HTML("Data sources: <a href=\"http://www.itis.gov/\">ITIS</a>,
-#                   <a href=\"http://api.phylotastic.org/tnrs\">Phylotastic</a>,
-#                   <a href=\"http://www.issg.org/database/welcome/\">Global Invasive Species Database</a>,
-#                   <a href=\"http://phylodiversity.net/phylomatic/\">Phylomatic</a>, and
-#                   <a href=\"http://www.gbif.org/\">GBIF</a>")),
-#     
-#     helpText(HTML("Source code for this app available on <a href=\"https://github.com/ropensci/usgs_app\">Github</a>. Created by rOpenSci. Vist <a href=\"http://ropensci.org/\">our website</a> to explore our R packages and tutorials. Get the R packages: <a href=\"https://github.com/ropensci/taxize_\">taxize</a>,
-#                   <a href=\"https://github.com/ropensci/rgbif\">rgbif</a>.  This app was built using <a href=\"http://www.rstudio.com/shiny/\">Shiny</a>.  We use <a href=\"http://phylodiversity.net/phylomatic/\">Phylomatic</a> to
-#                   generate the phylogeny, so phylogenies are restricted to plants.")),
-#     
-#     helpText(HTML("Bugs? File them <a href=\"https://github.com/ropensci/usgs_app/issues\">here</a>"))
-    ),
-  
+      ),
+  #   
   mainPanel(
-    
     tabsetPanel(
       tabPanel("Name Resolution", 
-#                HTML('<div class="alert alert-info alert-block">
-#                       <button type="button" class="close" data-dismiss="alert">&times;</button>
-#                       <a href="http://taxosaurus.org/">Data from the Taxosaurus API</a><br>
-#                       <strong>acceptedName:</strong> the new name, <strong>matchedName:</strong> name matched against<br>
-#                       <strong>sourceID:</strong> the original source, <strong>score:</strong> higher score = better match
-#                     </div>'), 
                HTML('<style>
-                      .btn { float: right; }
-                      a.tooltip{ z-index:1030; background-color: #000000}
+                    .btn { float: right; }
+                    a.tooltip{ z-index:1030; background-color: #000000}
                     </style>
                     <!-- Downoad Button -->
                     <button id="tnrs" class="btn btn-success"><i rel="tooltip" title="Download as csv" class="icon-download icon-white"></i></button>
@@ -138,194 +118,368 @@ Bugs? File them <a href=\"https://github.com/ropensci/usgs_app/issues\">here</a>
                     <link href="//netdna.bootstrapcdn.com/font-awesome/3.1.1/css/font-awesome.css" rel="stylesheet">
                     <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
                     
-                    <a href="#myModal" role="button" class="btn btn-inverse" data-toggle="modal"><i class="icon-code icon-white"></i></a>
-
-                    <!-- Modal -->
+                    <a href="#myModal" role="btn" class="btn btn-inverse" data-toggle="modal"><i class="icon-code icon-white"></i></a>
+                    
+                    <!-- Get Code Modal -->
                     <div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-                      <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                          <h3 id="myModalLabel">Run the code locally</h3>
-                      </div>
-                      <div class="modal-body">
-                        <!-- <pre class="pre-scrollable"> -->
-                        <pre class="prettyprint">
+                    <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h3 id="myModalLabel">Run the code locally</h3>
+                    </div>
+                    <div class="modal-body">
+                    <!-- <pre class="pre-scrollable"> -->
+                    <pre class="prettyprint">
+                    install.packages("taxize")
+                    library(taxize)
+                    species <- c("species1","species2","species3")
+                    tnrs(species, getpost="POST", source_ = "NCBI")[,1:5]
+                    </pre>
+                    </div>
+                    </div>
+                    
+                    <a href="#tnrsModal" role="btn" class="btn btn-info" data-toggle="modal" style="float:right;"><i class="icon-question-sign icon-white"></i></a>
+                    
+                    <!-- Modal -->
+                    <div id="tnrsModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                    <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h3 id="tnrsModal">Info</h3>
+                    </div>
+                    <div class="modal-body">
+                    <a href="http://taxosaurus.org/">Data from the Taxosaurus API</a><br><br>
+                    <h5>Data Fields</h5>
+                    <ul>
+                    <small>
+                    <li><strong>acceptedName:</strong> the new name</li>
+                    <li><strong>matchedName:</strong> name matched against</li>
+                    <li><strong>sourceID:</strong> the original source</li>
+                    <li><strong>score:</strong> higher score = better match</li>
+                    </small>
+                    </ul>
+                    </div>
+                    </div>
+                    '),
+               tableOutput("tnrs")
+               ),
+      tabPanel("ITIS Classification", 
+               HTML('
+                    <a href="#classModal" role="btn" class="btn btn-inverse" data-toggle="modal" style="float:right;"><i class="icon-code icon-white"></i></a>
+                    
+                    <!-- Get Code Modal -->
+                    <div id="classModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="classModal" aria-hidden="true">
+                    <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h3 id="classModal">Run the code locally</h3>
+                    </div>
+                    <div class="modal-body">
+                    <!-- <pre class="pre-scrollable"> -->
+                    <pre class="prettyprint">
+                    install.packages("taxize")
+                    library(taxize)
+                    species <- c("species1","species2","species3")
+                    tax_name(query=species, get=c("genus", "family", "order", "kingdom"), db="ncbi", locally=FALSE)
+                    </pre>
+                    </div>
+                    </div>
+                    
+                    <a href="#classModal" role="btn" class="btn btn-info" data-toggle="modal" style="float:right;"><i class="icon-question-sign icon-white"></i></a>
+                    
+                    <!-- Modal -->
+                    <div id="classModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="classModal" aria-hidden="true">
+                    <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h3 id="classModal">Info</h3>
+                    </div>
+                    <div class="modal-body">
+                    <a href="http://taxosaurus.org/">Data from the Taxosaurus API</a><br><br>
+                    <h5>Data Fields</h5>
+                    <ul>
+                    <small>
+                    <li><strong>acceptedName:</strong> the new name</li>
+                    <li><strong>matchedName:</strong> name matched against</li>
+                    <li><strong>sourceID:</strong> the original source</li>
+                    <li><strong>score:</strong> higher score = better match</li>
+                    </small>
+                    </ul>
+                    </div>
+                    </div>
+                    '), 
+               tableOutput("rank_names")
+               ),
+#       tabPanel("ITIS Chlidren", 
+#                HTML('
+#                     <a href="#childModal" role="btn" class="btn btn-inverse" data-toggle="modal" style="float:right;"><i class="icon-code icon-white"></i></a>
+#                     
+#                     <!-- Get Code Modal -->
+#                     <div id="childModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="childModal" aria-hidden="true">
+#                     <div class="modal-header">
+#                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+#                     <h3 id="childModal">Run the code locally</h3>
+#                     </div>
+#                     <div class="modal-body">
+#                     <!-- <pre class="pre-scrollable"> -->
+#                     <pre class="prettyprint">
+#                     install.packages("taxize")
+#                     library(taxize)
+#                     species <- c("species1","species2","species3")
+#                     out <- llply(species, function(x) col_downstream(name = x, downto = <level here, Species, Genus, etc.>)[[1]])
+#                     ldply(out)
+#                     </pre>
+#                     </div>
+#                     </div>
+#                     
+#                     
+#                     <a href="#childrenModal" role="btn" class="btn btn-info" data-toggle="modal" style="float:right;"><i class="icon-question-sign icon-white"></i></a>
+#                     
+#                     <!-- Modal -->
+#                     <div id="childrenModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+#                     <div class="modal-header">
+#                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+#                     <h3 id="childrenModal">Info</h3>
+#                     </div>
+#                     <div class="modal-body">
+#                     <a href="http://taxosaurus.org/">Data from the Integrated Taxonomic Information Database (ITIS) API</a><br><br>
+#                     <h5>Data Fields</h5>
+#                     <ul>
+#                     <li><strong>parentName:</strong> parent of the taxon you searched for</li>
+#                     <li><strong>parentTsn:</strong> ITIS taxonomic searial number of the parent taxon</li>
+#                     <li><strong>rankName:</strong> rank of the taxon you searched for</li> 
+#                     <li><strong>taxonName:</strong> the taxon you searched for </li>
+#                     <li><strong>tsn</strong> its TSN</li>
+#                     </ul>
+#                     </div>
+#                     </div>
+#                     '),
+#                tableOutput("itis_children")
+#                ),
+#       tabPanel("Invasive?", 
+#                HTML('
+#                     <a href="#invadeModal" role="btn" class="btn btn-inverse" data-toggle="modal" style="float:right;"><i class="icon-code icon-white"></i></a>
+#                     
+#                     <!-- Get Code Modal -->
+#                     <div id="invadeModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="invadeModal" aria-hidden="true">
+#                     <div class="modal-header">
+#                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+#                     <h3 id="invadeModal">Run the code locally</h3>
+#                     </div>
+#                     <div class="modal-body">
+#                     <!-- <pre class="pre-scrollable"> -->
+#                     <pre class="prettyprint">
+#                     install.packages("taxize")
+#                     library(taxize)
+#                     species <- c("species1","species2","species3")
+#                     df <- gisd_isinvasive(x=species, simplify=TRUE)
+#                     df$status <- gsub("Not in GISD", "Not Invasive", df$status)
+#                     df
+#                     </pre>
+#                     </div>
+#                     </div>
+#                     
+#                     
+#                     <a href="#invasiveModal" role="btn" class="btn btn-info" data-toggle="modal" style="float:right;"><i class="icon-question-sign icon-white"></i></a>
+#                     
+#                     <!-- Modal -->
+#                     <div id="invasiveModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+#                     <div class="modal-header">
+#                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+#                     <h3 id="invasiveModal">Info</h3>
+#                     </div>
+#                     <div class="modal-body">
+#                     <a href="http://www.issg.org/database/welcome/">Data from the Global Invasive Species Database</a><br><br>
+#                     <h5>Data Fields</h5>
+#                     <ul>
+#                     <small>
+#                     <li><strong>species:</strong> the taxon searched for</li>
+#                     <li><strong>status:</strong> invasive or not</li>
+#                     </small>
+#                     </ul>
+#                     </div>
+#                     </div>
+#                     '),
+#                tableOutput("invasiveness")
+#                ),
+      tabPanel("Phylogeny", 
+               HTML('
+                    <style>
+                    #phycodeModal {
+                    width: 900px; /* SET THE WIDTH OF THE MODAL */
+                    margin: -250px 0 0 -450px; /* CHANGE MARGINS TO ACCOMODATE THE NEW WIDTH (original = margin: -250px 0 0 -280px;) */
+                    }
+                    
+                    #phycodeModal .modal-body {
+                    max-height: 800px;
+                    }
+                    </style>
+                    
+                    <a href="#phycodeModal" role="btn" class="btn btn-inverse" data-toggle="modal" style="float:right;"><i class="icon-code icon-white"></i></a>
+                    
+                    <!-- Get Code Modal -->
+                    <div id="phycodeModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="phycodeModal" aria-hidden="true">
+                    <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h3 id="phycodeModal">Run the code locally</h3>
+                    </div>
+                    <div class="modal-body">
+                    <!-- <pre class="pre-scrollable"> -->
+                    <pre class="prettyprint" style="font-size: 11px">
 install.packages("taxize")
 library(taxize)
 species <- c("species1","species2","species3")
-species2 <- strsplit(species, ",")[[1]]
-tnrs(species2, getpost="POST", source_ = "NCBI")[,1:5]
-                        </pre>
-                      </div>
+                    
+df <- gisd_isinvasive(x=species, simplify=TRUE)
+df$status <- gsub("Not in GISD", "Not Invasive", df$status)
+
+phylog <- phylomatic_tree(taxa=species, get = "POST", informat="newick", method = "phylomatic", storedtree = "R20120829", taxaformat = "slashpath", outformat = "newick", clean = "true")
+phylog$tip.label <- capwords(phylog$tip.label)
+for(i in seq_along(phylog$tip.label)){
+  phylog <- tree.set.tag(phylog, tree.find(phylog, phylog$tip.label[i]), "circle", df[df$species %in% gsub("_"," ",phylog$tip.label[i]),"status"])
+}
+ggphylo(phylog, label.size=5, label.color.by="circle", label.color.scale=scale_colour_discrete(name="", h=c(90, 10))) +
+  theme_bw(base_size=18) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.title.x = element_text(colour=NA),
+        axis.title.y = element_blank(),
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.line = element_blank(),
+        axis.ticks = element_blank(),
+        panel.border = element_blank())
+                    </pre>
+                    </div>
+                    </div>
+                    
+                    
+                    <a href="#phyModal" role="btn" class="btn btn-info" data-toggle="modal" style="float:right;"><i class="icon-question-sign icon-white"></i></a>
+                    
+                    <!-- Modal -->
+                    <div id="phyModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                    <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h3 id="phyModal">Info</h3>
+                    </div>
+                    <div class="modal-body">
+                    The phylogeny is based on data from the <a href="http://phylodiversity.net/phylomatic/"> Phylomatic API</a>, and 
+                    <a href="http://www.issg.org/database/welcome/">inasiveness data from the Global Invasive Species Database</a>.
+                    The status of invasive is rather vague, meaning the species is invasive somewhere. See <a href="http://www.issg.org/database/welcome/" target="_blank">here</a> for more info<br><br>
+                    <strong>Note</strong> Phylogenies are only available for plants at this time.
+                    </div>
                     </div>
                     '),
-#                downloadButton('downloadData', '', class='btn-success'),
-               tableOutput("tnrs"),
-               HTML('<style type="text/css">
-                    footer{position : absolute; bottom : 5%; left : 33%; padding : 5px;}
-                    .row-fluid .span6{width: 80%;}
-                    </style>
-                    <footer>
-                      <div class="span8">
-                        <div class="span2">
-                          <img src="phylotastic.png", height="120", width="120"</img>
-                        </div>
-                        <div class="span6">
-                          <div class="alert alert-info">
-                            <button type="button" class="close" data-dismiss="alert">&times;</button>
-                            <a href="http://taxosaurus.org/">Data from the Taxosaurus API</a><br>
-                            <strong>acceptedName:</strong> the new name, <strong>matchedName:</strong> name matched against<br>
-                            <strong>sourceID:</strong> the original source, <strong>score:</strong> higher score = better match
-                          </div>
-                        </div>
-                      </div>
-                    </footer>')
+               plotOutput("phylogeny")
                ),
-      tabPanel("ITIS Classification", 
-#                HTML('<div class="alert alert-info alert-block">
-#                     <button type="button" class="close" data-dismiss="alert">&times;</button>
-#                       <a href="http://taxosaurus.org/">Data from the Taxosaurus API</a><br>
-#                       <strong>acceptedName:</strong> the new name, <strong>matchedName:</strong> name matched against<br>
-#                       <strong>sourceID:</strong> the original source, <strong>score:</strong> higher score = better match
-#                     </div>'), 
-               HTML('<style>
-                      .btn { float: right; }
-                    </style>
-                    <button id="rank_names" class="btn btn-success"><i class="icon-download icon-white"></i></button>
-                    '),
-               tableOutput("rank_names"),
-               HTML('<style type="text/css">
-                    footer{position : absolute; bottom : 5%; left : 33%; padding : 5px;}
-                    .row-fluid .span6{width: 80%;}
-                    </style>
-                    <footer>
-                      <div class="span8">
-                        <div class="span2">
-                          <img src="itis.png", height="120", width="120"</img>
-                        </div>
-                        <div class="span6">
-                          <div class="alert alert-info">
-                            <button type="button" class="close" data-dismiss="alert">&times;</button>
-                            <a href="http://taxosaurus.org/">Data from the Taxosaurus API</a><br>
-                            <strong>acceptedName:</strong> the new name, <strong>matchedName:</strong> name matched against<br>
-                            <strong>sourceID:</strong> the original source, <strong>score:</strong> higher score = better match
-                          </div>
-                        </div>
-                      </div>
-                    </footer>')
-               ),
-      tabPanel("ITIS Chlidren", 
-               HTML('<style>
-                      .btn { float: right; }
-                    </style>
-                    <button id="itis_children" class="btn btn-success"><i class="icon-download icon-white"></i></button>
-                    '),
-               tableOutput("itis_children"),
-               HTML('<style type="text/css">
-                      footer{position : absolute; bottom : 5%; left : 33%; padding : 5px;}
-                      .row-fluid .span6{width: 85%;}
-                    </style>
-                    <footer>
-                      <div class="span8">
-                        <div class="span2">
-                          <img src="itis.png", height="100", width="100"</img>
-                        </div>
-                        <div class="span6">
-                          <div class="alert alert-info">
-                            <button type="button" class="close" data-dismiss="alert">&times;</button>
-                            <a href="http://taxosaurus.org/">Data from the Integrated Taxonomic Information Database (ITIS) API</a><br>
-                            <strong>parentName:</strong> parent of the taxon you searched for, <strong>parentTsn:</strong> ITIS taxonomic searial number of the parent taxon<br>
-                            <strong>rankName:</strong> rank of the taxon you searched for, <strong>taxonName:</strong> the taxon you searched for, <strong>tsn</strong> and its TSN
-                          </div>
-                        </div>
-                      </div>
-                    </footer>')
-      ),
-#       tabPanel("ITIS Synonyms", tableOutput("itis_syns")),
-      tabPanel("Invasive?", 
-#                HTML('<div class="alert alert-info alert-block">
-#                       <button type="button" class="close" data-dismiss="alert">&times;</button>
-#                       <a href="http://www.issg.org/database/welcome/">Data from the Global Invasive Species Database</a><br>
-#                       <strong>species:</strong> the taxon searched for, <strong>status:</strong> invasive or not<br>
-#                     </div>'), 
-               HTML('<style>
-                      .btn { float: right; }
-                    </style>
-                    <button id="invasiveness" class="btn btn-success"><i class="icon-download icon-white"></i></button>
-                    '),
-               tableOutput("invasiveness"),
-               HTML('<style type="text/css">
-                    footer{position : absolute; bottom : 5%; left : 33%; padding : 5px;}
-                    .row-fluid .span5{width: 80%;}
-                    </style>
-                    <footer>
-                      <div class="span8">
-                        <div class="span5">
-                          <div class="alert alert-info">
-                            <button type="button" class="close" data-dismiss="alert">&times;</button>
-                            <a href="http://www.issg.org/database/welcome/">Data from the Global Invasive Species Database</a><br>
-                            <strong>species:</strong> the taxon searched for, <strong>status:</strong> invasive or not<br>
-                          </div>
-                        </div>
-                      </div>
-                    </footer>')
-               ),
-      tabPanel("Phylogeny", 
-#                HTML('<div class="alert alert-info alert-block">
-#                       <button type="button" class="close" data-dismiss="alert">&times;</button>
-#                       <a href="http://phylodiversity.net/phylomatic/">Data from the Phylomatic API</a><br>
-#                       The phylogeny is based on Phylomatic data, and plots invasiveness status on the phylogeny.
-#                     </div>'), 
-               HTML('<style>
-                      .btn { float: right; }
-                    </style>
-                    <button id="phylogeny" class="btn btn-success"><i class="icon-download icon-white"></i></button>
-                    '),
-               plotOutput("phylogeny"),
-               HTML('<style type="text/css">
-                      footer{position : absolute; bottom : 2%; left : 33%; right: -50px; padding : 5px; width: 100%}
-                      .row-fluid .span6{width: 80%;}
-                    </style>
-                    <footer>
-                      <div class="span8">
-                        <div class="span2">
-                          <img src="phylomatic.png", height="150", width="150"</img>
-                        </div>
-                        <div class="span6">
-                          <div class="alert alert-info">
-                            <button type="button" class="close" data-dismiss="alert">&times;</button>
-                            <a href="http://phylodiversity.net/phylomatic/">Data from the Phylomatic API</a><br>
-                            The phylogeny is based on Phylomatic data. <strong>Note</strong> Phylogenies are only available for plants at this time.
-                          </div>
-                      </div>
-                    </footer>')
-               ),
-      tabPanel("Map", 
-#                HTML('<div class="alert alert-info alert-block">
-#                       <button type="button" class="close" data-dismiss="alert">&times;</button>
-#                       <a href="http://www.gbif.org/">Data from the Global Biodiversity Information Facility API</a><br>
-#                       Interactive map by Ramnath Vaidyanathan - made with <a href="http://ramnathv.github.io/rCharts/">rCharts</a> and <a href="http://leafletjs.com/">Leaflet.js</a>
-#                     </div>'), 
-               HTML('<style>
-                      .btn { float: right; }
-                    </style>
-                    <button id="map" class="btn btn-success"><i class="icon-download icon-white"></i></button>
-                    '),
-               plotOutput("map"),
-               HTML('<style type="text/css">
-                      footer{position : absolute; bottom : 2%; left : 28%; width: 100%}
-                      .row-fluid .span6{width: 80%;}
-                    </style>
-                    <footer>
-                      <div class="span8">
-                        <div class="span2">
-                          <img src="gbif.png", height="50", width="50"</img>
-                        </div>
-                        <div class="span6">
-                          <div class="alert alert-info">
-                            <button type="button" class="close" data-dismiss="alert">&times;</button>
-                            <a href="http://www.gbif.org/">Data from the Global Biodiversity Information Facility API</a><br>
-                        </div>
-                      </div>
-                    </footer>')
-    ))
-)))
+#       tabPanel("Static Map", 
+#                HTML('
+#                     <style>
+#                     #mapcodeModal {
+#                     width: 900px; /* SET THE WIDTH OF THE MODAL */
+#                     margin: -250px 0 0 -450px; /* CHANGE MARGINS TO ACCOMODATE THE NEW WIDTH (original = margin: -250px 0 0 -280px;) */
+#                     }
+#                     </style>
+#                     <a href="#mapcodeModal" role="btn" class="btn btn-inverse" data-toggle="modal" style="float:right;"><i class="icon-code icon-white"></i></a>
+#                     
+#                     <!-- Get Code Modal -->
+#                     <div id="mapcodeModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="mapcodeModal" aria-hidden="true">
+#                     <div class="modal-header">
+#                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+#                     <h3 id="mapcodeModal">Run the code locally</h3>
+#                     </div>
+#                     <div class="modal-body">
+#                     <!-- <pre class="pre-scrollable"> -->
+#                     <pre class="prettyprint">
+#                     install.packages(c("taxize","rgbif"))
+#                     library(taxize)
+#                     library(rgbif)
+#                     species <- c("species1","species2","species3")
+#                     out <- occurrencelist_many(species, coordinatestatus = TRUE, maxresults = num_occurrs, format="darwin", fixnames="change", removeZeros=TRUE)
+#                     out$taxonName <- capwords(out$taxonName, onlyfirst=TRUE)
+#                     gbifmap(out, customize = list(
+#                     scale_colour_brewer("", palette=<choose palette, see RColorBrewer help>),
+#                     theme(legend.key = element_blank(), 
+#                     legend.position = "bottom", 
+#                     plot.background = element_rect(colour="grey"),
+#                     panel.border = element_blank()),
+#                     scale_x_continuous(expand=c(0,0)),
+#                     scale_y_continuous(expand=c(0,0)),
+#                     guides(colour=guide_legend(override.aes = list(size = 5), nrow=2))
+#                     )) 
+#                     </pre>
+#                     </div>
+#                     </div>
+#                     
+#                     
+#                     <a href="#mapModal" role="btn" class="btn btn-info" data-toggle="modal" style="float:right;"><i class="icon-question-sign icon-white"></i></a>
+#                     
+#                     <!-- Modal -->
+#                     <div id="mapModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+#                     <div class="modal-header">
+#                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+#                     <h3 id="mapModal">Info</h3>
+#                     </div>
+#                     <div class="modal-body">
+#                     <a href="http://www.gbif.org/">Data from the Global Biodiversity Information Facility API</a><br><br>
+#                     </div>
+#                     </div>'),
+#                plotOutput("map")),
+      tabPanel("Interactive map", 
+           HTML('
+        <a href="#mapModal" role="btn" class="btn btn-info" data-toggle="modal" style="float:right;"><i class="icon-question-sign icon-white"></i></a>
+
+        <!-- Modal -->
+        <div id="mapModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="mapModal" aria-hidden="true">
+        <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="mapModal">Info</h3>
+        </div>
+        <div class="modal-body">
+        Map made by searching <a href="http://www.gbif.org/" target="_blank">the GBIF API</a>, then passing 
+        the data to <a href="https://github.com/ramnathv/rCharts" target="_blank">rCharts</a>, an R package to create, customize 
+        and publish interactive javascript visualizations from R. <br><br>
+        You can choose the map layer on the sidebar to the left. <br><br>
+        Thanks to Ramnath Vaidyanathan for a lot of help with these maps.
+        </div>
+        </div>'),
+        mapOutput('map_rcharts')),
+     
+      tabPanel("Papers",  
+               HTML('
+                    <a href="#paperscodeModal" role="btn" class="btn btn-inverse" data-toggle="modal" style="float:right;"><i class="icon-code icon-white"></i></a>
+                    
+                    <!-- Get Code Modal -->
+                    <div id="paperscodeModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="paperscodeModal" aria-hidden="true">
+                    <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h3 id="paperscodeModal">Run the code locally</h3>
+                    </div>
+                    <div class="modal-body">
+                    <!-- <pre class="pre-scrollable"> -->
+                    <pre class="prettyprint">
+install.packages("rplos")
+require(rplos)
+species <- c("species1","species2","species3")
+dat <- llply(species, function(x) searchplos(x, fields="id,journal,title", limit = input$paperlim)[,-4])
+names(dat) <- species
+dat <- ldply(dat)
+names(dat) <- c("Species","Journal","Title")
+dat
+                    </pre>
+                    </div>
+                    </div>
+
+                    <a href="#papersModal" role="btn" class="btn btn-info" data-toggle="modal" style="float:right;"><i class="icon-question-sign icon-white"></i></a>
+
+                    <!-- Modal -->
+                    <div id="papersModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="papersModal" aria-hidden="true">
+                    <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h3 id="papersModal">Info</h3>
+                    </div>
+                    <div class="modal-body">
+                    Taxon names searched against the <a href="http://api.plos.org/" target="_blank">PLoS search API</a><br><br>
+                    Links to papers via their DOIs can be viewed in <a href="http://macrodocs.org/" target="_blank">Macrodocs</a>
+                    </div>
+                    </div>'), htmlOutput('papers'))
+    )
+  )
+))
