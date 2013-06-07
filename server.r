@@ -56,10 +56,6 @@ shinyServer(function(input, output){
     print(p)
   })
   
-  rcharts_data <- reactive({
-    rcharts_prep(sppchar = input$spec, occurrs = input$numocc, 
-      palette_name = get_palette(input$palette), popup = TRUE)  
-  })
   
   rgbif_data <- reactive({
     rcharts_prep1(sppchar = input$spec, occurrs = input$numocc)
