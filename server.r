@@ -66,9 +66,15 @@ shinyServer(function(input, output){
   })
   
   # Interactive rCharts map (thanks Ramnath)
-	output$map_rcharts <- renderMap({  
-    gbifmap2(input = rcharts_data(), input$provider)
-	})
+   output$map_rcharts <- renderMap({  
+      imap = gbifmap2(input = rcharts_data(), input$provider)
+      imap$legend(
+        position = 'bottomright',
+        colors = c('red', 'blue', 'green'),
+        labels = c('Red', 'Blue', 'Green')
+       )
+       imap
+    })
   
   output$papers <- renderText({
     require(rplos); require(xtable); require(plyr)
