@@ -1,0 +1,52 @@
+<style>
+     .btn { float: right; }
+     a.tooltip{ z-index:1030; background-color: #000000}
+</style>
+
+<!-- Downoad Button -->
+<!-- <button id="tnrs" class="btn btn-success"><i rel="tooltip" title="Download as csv" class="icon-download icon-white"></i></button> -->
+
+<!-- Button to trigger modal -->
+<link href="//netdna.bootstrapcdn.com/font-awesome/3.1.1/css/font-awesome.css" rel="stylesheet">
+<script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
+
+<a href="#myModal" role="btn" class="btn btn-inverse" data-toggle="modal"><i class="icon-code icon-white"></i></a>
+
+<!-- Get Code Modal -->
+<div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+     <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+          <h3 id="myModalLabel">Run the code locally</h3>
+     </div>
+     
+     <div class="modal-body">
+          <!-- <pre class="pre-scrollable"> -->
+          <pre class="prettyprint">
+install.packages("taxize")
+library(taxize)
+species <- c("species1","species2","species3")
+tnrs(species, getpost="POST", source_ = "NCBI")[,1:5]
+          </pre>
+     </div>
+</div>
+
+<a href="#tnrsModal" role="btn" class="btn btn-info" data-toggle="modal" style="float:right;"><i class="icon-question-sign icon-white"></i></a>
+
+<!-- Modal -->
+<div id="tnrsModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+     <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+          <h3 id="tnrsModal">Info</h3>
+     </div>
+
+     <div class="modal-body">
+          <a href="http://taxosaurus.org/">Data from the Taxosaurus API</a><br><br>
+          <h5>Data Fields</h5>
+          <ul><small>
+               <li><strong>acceptedName:</strong> the new name</li>
+               <li><strong>matchedName:</strong> name matched against</li>
+               <li><strong>sourceID:</strong> the original source</li>
+               <li><strong>score:</strong> higher score = better match</li>
+          </small></ul>
+     </div>
+</div>

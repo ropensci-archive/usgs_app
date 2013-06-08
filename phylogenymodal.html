@@ -1,0 +1,69 @@
+<style>
+    #phycodeModal {
+        width: 900px; /* SET THE WIDTH OF THE MODAL */
+        margin: -250px 0 0 -450px; /* CHANGE MARGINS TO ACCOMODATE THE NEW WIDTH (original = margin: -250px 0 0 -280px;) */
+    }
+
+    #phycodeModal .modal-body {
+        max-height: 800px;
+    }
+</style>
+
+<a href="#phycodeModal" role="btn" class="btn btn-inverse" data-toggle="modal" style="float:right;"><i class="icon-code icon-white"></i></a>
+
+<!-- Get Code Modal -->
+<div id="phycodeModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="phycodeModal" aria-hidden="true">
+<div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="phycodeModal">Run the code locally</h3>
+</div>
+
+<div class="modal-body">
+    <!-- <pre class="pre-scrollable"> -->
+    <pre class="prettyprint" style="font-size: 11px">
+install.packages("taxize")
+library(taxize)
+species <- c("species1","species2","species3")
+
+df <- gisd_isinvasive(x=species, simplify=TRUE)
+df$status <- gsub("Not in GISD", "Not Invasive", df$status)
+
+phylog <- phylomatic_tree(taxa=species, get = "POST", informat="newick", method = "phylomatic", storedtree = "R20120829", taxaformat = "slashpath",     outformat = "newick", clean = "true")
+phylog$tip.label <- capwords(phylog$tip.label)
+for(i in seq_along(phylog$tip.label)){
+    phylog <- tree.set.tag(phylog, tree.find(phylog, phylog$tip.label[i]), "circle", df[df$species %in% gsub("_"," ",phylog$tip.label[i]),"status"])
+}
+ggphylo(phylog, label.size=5, label.color.by="circle", label.color.scale=scale_colour_discrete(name="", h=c(90, 10))) +
+    theme_bw(base_size=18) +
+    theme(panel.grid.major = element_blank(), 
+            panel.grid.minor = element_blank(),
+            panel.background = element_blank(),
+            axis.title.x = element_text(colour=NA),
+            axis.title.y = element_blank(),
+            axis.text.x = element_blank(),
+            axis.text.y = element_blank(),
+            axis.line = element_blank(),
+            axis.ticks = element_blank(),
+            panel.border = element_blank())
+    </pre>
+    </div>
+    </div>
+
+
+    <a href="#phyModal" role="btn" class="btn btn-info" data-toggle="modal" style="float:right;"><i class="icon-question-sign icon-white"></i></a>
+
+    <!-- Modal -->
+    <div id="phyModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="phyModal">Info</h3>
+    </div>
+
+    <div class="modal-body">
+        The phylogeny is based on data from the <a href="http://phylodiversity.net/phylomatic/"> Phylomatic API</a>, and 
+        <a href="http://www.issg.org/database/welcome/">inasiveness data from the Global Invasive Species Database</a>.
+        The status of invasive is rather vague, meaning the species is invasive somewhere. See <a href="http://www.issg.org/database/welcome/" target="_blank">here</a> for more info<br><br>
+        <strong>Note</strong> Phylogenies are only available for plants at this time.
+    </div>
+</div>

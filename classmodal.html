@@ -1,0 +1,40 @@
+<a href="#classModal" role="btn" class="btn btn-inverse" data-toggle="modal" style="float:right;"><i class="icon-code icon-white"></i></a>
+
+<!-- Get Code Modal -->
+<div id="classModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="classModal" aria-hidden="true">
+     <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+          <h3 id="classModal">Run the code locally</h3>
+     </div>
+
+     <div class="modal-body">
+     <!-- <pre class="pre-scrollable"> -->
+     <pre class="prettyprint">
+install.packages("taxize")
+library(taxize)
+species <- c("species1","species2","species3")
+tax_name(query=species, get=c("genus", "family", "order", "kingdom"), db="ncbi", locally=FALSE)
+     </pre>
+     </div>
+</div>
+
+<a href="#classModal" role="btn" class="btn btn-info" data-toggle="modal" style="float:right;"><i class="icon-question-sign icon-white"></i></a>
+
+<!-- Modal -->
+<div id="classModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="classModal" aria-hidden="true">
+     <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+          <h3 id="classModal">Info</h3>
+     </div>
+
+     <div class="modal-body">
+          <a href="http://taxosaurus.org/">Data from the Taxosaurus API</a><br><br>
+          <h5>Data Fields</h5>
+          <ul><small>
+               <li><strong>acceptedName:</strong> the new name</li>
+               <li><strong>matchedName:</strong> name matched against</li>
+               <li><strong>sourceID:</strong> the original source</li>
+               <li><strong>score:</strong> higher score = better match</li>
+          </small></ul>
+     </div>
+</div>
