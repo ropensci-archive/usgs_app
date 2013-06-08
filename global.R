@@ -54,7 +54,7 @@ gbifmap2 <- function(input_data, map_provider = 'MapQuestOpen.OSM', map_zoom = 2
   L1 <- Leaflet$new()
   L1$tileLayer(provider = map_provider, urlTemplate = NULL)
   
-  L1$set(height = 400, width = 800)
+  L1$set(height = 600, width = 1200)
   L1$setView(c(30, -73.90), map_zoom)
   L1$geoJson(input_data, 
              onEachFeature = '#! function(feature, layer){
