@@ -6,7 +6,7 @@ shinyServer(function(input, output){
 
   # factor out code common to all functions.
   species2 <- reactive({
-    strsplit(input$spec, ",")[[1]];
+    strsplit(input$spec, ",")[[1]]
   })
   
   output$tnrs <- renderTable({
@@ -70,8 +70,10 @@ shinyServer(function(input, output){
       imap = gbifmap2(input = rcharts_data(), input$provider)
       imap$legend(
         position = 'bottomright',
-        colors = c('red', 'blue', 'green'),
-        labels = c('Red', 'Blue', 'Green')
+#         colors = c('red', 'blue', 'green'),
+#         labels = c('Red', 'Blue', 'Green')
+          colors = get_colors(species2(), get_palette(input$palette)),
+          labels = species2()
        )
        imap
     })
@@ -79,7 +81,7 @@ shinyServer(function(input, output){
   output$papers <- renderText({
     require(rplos); require(xtable); require(plyr)
     dat <- llply(species2(), function(x) searchplos(x, fields='id,journal,title', limit = input$paperlim, key='WQcDSXml2VSWx3P')[,-4])
-    names(dat) <- species2
+    names(dat) <- species2()
     dat <- ldply(dat)
     dat$id <- paste0("<a href='http://macrodocs.org/?doi=", dat$id, "' target='_blank'> <i class='icon-book'></i> </a>")
     names(dat) <- c("Species","Read","Journal","Title")

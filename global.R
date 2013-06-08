@@ -10,10 +10,19 @@ rcharts_prep1 <- function(sppchar, occurrs){
   out
 }
  
+get_colors <- function(vec, palette_name){
+  num_colours <- length(unique(vec))
+#   num_colours <- length(unique(out))
+  brewer.pal(max(num_colours, 3), palette_name)
+}
+
+# get_colors(c("a","b","c","d","e"), "PuBuGn")
+
 rcharts_prep2 <- function(out, palette_name, popup = FALSE){ 
   # colors
-  num_colours <- length(unique(out$taxonName))
-  mycolors <- brewer.pal(max(num_colours, 3), palette_name)
+#   num_colours <- length(unique(out$taxonName))
+#   mycolors <- brewer.pal(max(num_colours, 3), palette_name)
+  mycolors <- get_colors(out$taxonName, palette_name)
   
   out2 <- mutate(out, 
     taxonName = as.factor(taxonName),
