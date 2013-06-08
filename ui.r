@@ -9,7 +9,7 @@ shinyUI(pageWithSidebar(
     
     HTML('<style type="text/css">
          .row-fluid .span4{width: 26%;}
-         .leaflet {height: 600px; width: 1200px;}
+         .leaflet {height: 600px; width: 830px;}
          </style>'),
     
     wellPanel(
