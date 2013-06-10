@@ -13,8 +13,6 @@ See [this gist](https://gist.github.com/SChamberlain/5286615) for many examples 
 + doMC
 + ape
 + ggphylo
-+ RSQLite
-+ DBI
 
 ### Install from Github using the devtools package
 + taxize
@@ -27,6 +25,10 @@ install_github("taxize_", "ropensci", "local_sql")
 library(taxize)
 install_github("rgbif", "ropensci")
 library(rgbif)
+install_github("rbison", "ropensci")
+library(rbison)
+install_github("rCharts", "ramnathv")
+library(rCharts)
 ```
 
 To sync code to a Shiny server:
