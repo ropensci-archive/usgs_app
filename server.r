@@ -12,12 +12,20 @@ shinyServer(function(input, output){
     strsplit(input$spec, ",")[[1]]
   })
   
-  output$tnrs <- renderTable({
+  tnrs_prep <- reactive({
     tnrs(species2(), getpost="POST", source_ = "NCBI")[,1:5]
   })
   
-  output$rank_names <- renderTable({
+  output$tnrs <- renderTable({
+    tnrs_prep()
+  })
+  
+  class_prep <- reactive({
     tax_name(query=species2(), get=c("genus", "family", "order", "class", "kingdom"), db="ncbi")
+  })
+  
+  output$rank_names <- renderTable({
+    class_prep()
   })
   
   bar <- reactive({
@@ -30,7 +38,7 @@ shinyServer(function(input, output){
     bar()
   })
   
-  output$phylogeny <- renderPlot({
+  phylogeny_prep <- reactive({
     require(ape); require(ggphylo); require(doMC)    
     # Make phylogeny
     registerDoMC(cores=4)
@@ -55,6 +63,10 @@ shinyServer(function(input, output){
     print(p)
   })
   
+  output$phylogeny <- renderPlot({
+    phylogeny_prep()
+  })
+  
   occur_data <- reactive({
     rcharts_prep1(sppchar = input$spec, occurrs = input$numocc, datasource = input$datasource)
 #     rcharts_prep1(sppchar = 'Carpobrotus edulis,Rosmarinus officinalis,Ageratina riparia', occurrs = 10, datasource = "BISON")
@@ -77,18 +89,7 @@ shinyServer(function(input, output){
     imap
   })
   
-  # full screen interactive chart
-#   output$map_rcharts_fullscreen <- renderMap({  
-#     imap = gbifmap2(input = rcharts_data(), input$provider, width=1600, height=800)
-#     imap$legend(
-#       position = 'bottomright',
-#       colors = get_colors(species2(), get_palette(input$palette)),
-#       labels = species2()
-#     )
-#     imap
-#   })
-#   
-  output$papers <- renderText({
+  papers_prep <- reactive({
     require(rplos); require(xtable); require(plyr)
     dat <- llply(species2(), function(x) searchplos(x, fields='id,journal,title', limit = input$paperlim, key='WQcDSXml2VSWx3P')[,-4])
     names(dat) <- species2()
@@ -100,4 +101,38 @@ shinyServer(function(input, output){
     g <- print(xtable(dat), type="html")
     gsub("\n", "", gsub("&gt ", ">", gsub("&lt ", "<", g)))
   })
+  
+  output$papers <- renderText({
+    papers_prep()
+  })
+  
+  output$download_tnrs <- downloadHandler(
+    filename = function() { 'data.csv' },
+    content = function(file) {
+      write.csv(tnrs_prep(), file)
+    }
+  )
+  
+  output$download_class <- downloadHandler(
+    filename = function() { 'data.csv' },
+    content = function(file) {
+      write.csv(class_prep(), file)
+    }
+  )
+  
+  output$download_papers <- downloadHandler(
+    filename = function() { 'data.csv' },
+    content = function(file) {
+      write.csv(papers_prep(), file)
+    }
+  )
+
+#   output$download_phylogeny <- downloadHandler(
+#     filename = function() { 'phylogeny.png' },
+#     content = function(file) {
+#       invisible(phylogeny_prep())
+#       ggsave(file)
+#     }
+#   )
+  
 })
