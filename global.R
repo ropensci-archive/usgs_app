@@ -95,6 +95,7 @@ gbifmap2 <- function(input_data, map_provider = 'MapQuestOpen.OSM', map_zoom = 2
              })
              } !#"
   )
+  L1$fullScreen(TRUE)
   return(L1)
 }    
 
