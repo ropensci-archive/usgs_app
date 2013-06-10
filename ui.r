@@ -15,10 +15,12 @@ shinyUI(pageWithSidebar(
     wellPanel(
       HTML('
          <style type="text/css">
-          .btn {float: left;}
+          .btn-submit {float: left;}
          </style>'),
       
-      submitButton("Submit"),
+      HTML('
+           <button style="float: left;" type="submit" class="btn btn-primary">Submit</button>
+           '),
       
       includeHTML('egsmodal.html'),
 
@@ -28,6 +30,8 @@ shinyUI(pageWithSidebar(
     # Map options 
     wellPanel(
       h5(strong("Map options:")),
+      # data source
+      selectInput(inputId="datasource", label="Select data source", choices=c("GBIF","BISON"), selected="GBIF"),
       # number of occurrences for map
       sliderInput(inputId="numocc", label="Select max. number of occurrences to search for per species", min=0, max=500, value=50),
       # color palette for map
@@ -55,7 +59,7 @@ shinyUI(pageWithSidebar(
       tabPanel("Name Resolution", includeHTML('tnrs.html'), tableOutput("tnrs")),               
       tabPanel("ITIS Classification", includeHTML('classmodal.html'), tableOutput("rank_names")),
       tabPanel("Phylogeny", includeHTML('phylogenymodal.html'), plotOutput("phylogeny")),
-      tabPanel("Interactive map", includeHTML('mapmodal.html'), mapOutput('map_rcharts')),
+      tabPanel("Map", includeHTML('mapmodal.html'), mapOutput('map_rcharts')),
       tabPanel("Papers", includeHTML('papersmodal.html'), htmlOutput('papers'))
     ),
   includeHTML('gauges.html')

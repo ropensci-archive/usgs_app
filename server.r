@@ -14,7 +14,7 @@ shinyServer(function(input, output){
   })
   
   output$rank_names <- renderTable({
-    tax_name(query=species2(), get=c("genus", "family", "order", "kingdom"), db="ncbi")
+    tax_name(query=species2(), get=c("genus", "family", "order", "class", "kingdom"), db="ncbi")
   })
   
   bar <- reactive({
@@ -57,26 +57,38 @@ shinyServer(function(input, output){
   })
   
   
-  rgbif_data <- reactive({
-    rcharts_prep1(sppchar = input$spec, occurrs = input$numocc)
+  occur_data <- reactive({
+    rcharts_prep1(sppchar = input$spec, occurrs = input$numocc, datasource = input$datasource)
+#     rcharts_prep1(sppchar = 'Carpobrotus edulis,Rosmarinus officinalis,Ageratina riparia', occurrs = 10, datasource = "BISON")
   })
   
   rcharts_data <- reactive({
-    rcharts_prep2(rgbif_data(), palette_name = get_palette(input$palette), popup = TRUE)
+    rcharts_prep2(occur_data(), palette_name = get_palette(input$palette), popup = TRUE)
+#     rcharts_prep2(bbb, palette_name = "Blues", popup = TRUE)
   })
   
   # Interactive rCharts map (thanks Ramnath)
-   output$map_rcharts <- renderMap({  
-      imap = gbifmap2(input = rcharts_data(), input$provider)
-      imap$legend(
-        position = 'bottomright',
-#         colors = c('red', 'blue', 'green'),
-#         labels = c('Red', 'Blue', 'Green')
-          colors = get_colors(species2(), get_palette(input$palette)),
-          labels = species2()
-       )
-       imap
-    })
+  output$map_rcharts <- renderMap({  
+    imap = gbifmap2(input = rcharts_data(), input$provider)
+#     imap = gbifmap2(input = ccc, "MapQuestOpen.OSM")
+    imap$legend(
+      position = 'bottomright',
+      colors = get_colors(species2(), get_palette(input$palette)),
+      labels = species2()
+    )
+    imap
+  })
+  
+  # full screen interactive chart
+  output$map_rcharts_fullscreen <- renderMap({  
+    imap = gbifmap2(input = rcharts_data(), input$provider, width=1600, height=800)
+    imap$legend(
+      position = 'bottomright',
+      colors = get_colors(species2(), get_palette(input$palette)),
+      labels = species2()
+    )
+    imap
+  })
   
   output$papers <- renderText({
     require(rplos); require(xtable); require(plyr)

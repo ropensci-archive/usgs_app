@@ -1,34 +1,51 @@
-rcharts_prep1 <- function(sppchar, occurrs){
-  require(rgbif); require(plyr); require(RColorBrewer);  require(taxize)
+rcharts_prep1 <- function(sppchar, occurrs, datasource){
+  
+  require(plyr); require(RColorBrewer);  require(taxize)
   # prepare occurrence data
   species2 <- strsplit(sppchar, ",")[[1]]
-  out <- occurrencelist_many(species2, coordinatestatus = TRUE, maxresults = occurrs, 
-    format="darwin", fixnames="change", removeZeros=TRUE)
-  out$taxonName <- capwords(out$taxonName, onlyfirst=TRUE)
-  out <- out[,c("taxonName","county","decimalLatitude","decimalLongitude",
-    "institutionCode","collectionCode","catalogNumber","basisOfRecordString","collector")]
-  out
+  
+  if(datasource=="GBIF"){
+    require(rgbif)  
+    out <- occurrencelist_many(species2, coordinatestatus = TRUE, maxresults = occurrs, 
+                               format="darwin", fixnames="change", removeZeros=TRUE)
+    out$taxonName <- capwords(out$taxonName, onlyfirst=TRUE)
+    out <- out[,c("taxonName","county","decimalLatitude","decimalLongitude",
+                  "institutionCode","collectionCode","catalogNumber","basisOfRecordString","collector")]
+    out
+  } else
+  {
+    require(rbison); require(doMC)
+    registerDoMC(cores=4)
+    hh <- llply(species2, function(x){
+      temp <- bison_data(bison(x, count = occurrs), "data_list")
+      llply(temp, function(x){ 
+        names(x)[2:4] <- c("taxonName","decimalLongitude","decimalLatitude")
+        x$taxonName <- capwords(x$taxonName, onlyfirst=TRUE)
+        x 
+      })
+    }, .parallel=TRUE)
+    do.call(c,hh)
+  }
 }
  
 get_colors <- function(vec, palette_name){
   num_colours <- length(unique(vec))
-#   num_colours <- length(unique(out))
   brewer.pal(max(num_colours, 3), palette_name)
 }
 
-# get_colors(c("a","b","c","d","e"), "PuBuGn")
-
 rcharts_prep2 <- function(out, palette_name, popup = FALSE){ 
-  # colors
-#   num_colours <- length(unique(out$taxonName))
-#   mycolors <- brewer.pal(max(num_colours, 3), palette_name)
-  mycolors <- get_colors(out$taxonName, palette_name)
   
-  out2 <- mutate(out, 
-    taxonName = as.factor(taxonName),
-    fillColor = mycolors[as.numeric(taxonName)]
-  )
-  out_list2 <- apply(out2, 1, as.list)
+  if(is.gbiflist(out))
+    out <- apply(out, 1, as.list)
+  
+  # colors
+  mycolors <- get_colors(out$taxonName, palette_name)
+  mycolors_df <- data.frame(taxon=unique(sapply(out, function(x) x[["taxonName"]])), color=mycolors)
+  
+  out_list2 <- llply(out, function(x){ 
+    x$fillColor = mycolors_df[mycolors_df$taxon %in% x$taxonName, "color"]
+    x
+  })
   
   # popup
   if(popup)
@@ -57,13 +74,11 @@ toGeoJSON <- function(list_, lat = 'latitude', lon = 'longitude'){
   setNames(Filter(function(x) !is.null(x), x), NULL)
 }
 
-
-gbifmap2 <- function(input_data, map_provider = 'MapQuestOpen.OSM', map_zoom = 2){
+gbifmap2 <- function(input_data, map_provider = 'MapQuestOpen.OSM', map_zoom = 2, height = 600, width = 870){
   require(rCharts)
   L1 <- Leaflet$new()
   L1$tileLayer(provider = map_provider, urlTemplate = NULL)
-  
-  L1$set(height = 600, width = 830)
+  L1$set(height = height, width = width)
   L1$setView(c(30, -73.90), map_zoom)
   L1$geoJson(input_data, 
              onEachFeature = '#! function(feature, layer){

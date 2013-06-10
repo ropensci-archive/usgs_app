@@ -1,4 +1,54 @@
-<a href="#mapModal" role="btn" class="btn btn-info" data-toggle="modal" style="float:right;"><i class="icon-question-sign icon-white"></i></a>
+<!-- static map code modal -->
+<style>
+    #mapcodeModal {
+        width: 900px;
+        margin: -250px 0 0 -450px; 
+    }
+
+    .btn-info { width: 16px; height: 21px;}
+
+    .row-fluid .span1 { width: 1.982906%; }
+</style>
+
+<div class="span1" style="float: right;">
+    <a href="#mapcodeModal" role="btn" class="btn btn-inverse" data-toggle="modal"><i class="icon-code icon-white"></i></a>
+    <a href="#mapModal" role="btn" class="btn btn-info" data-toggle="modal"><i class="icon-question-sign icon-white"></i></a>
+    <!-- <a href="#fullscreenModal" role="btn" class="btn btn-warning" data-toggle="modal"><i class="icon-map-marker icon-white"></i></a> -->
+</div>
+
+<!-- Get Code Modal -->
+<div id="mapcodeModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="mapcodeModal" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="mapcodeModal">Run the code locally</h3>
+    </div>
+
+<div class="modal-body">
+    <h3>The interactive map is a bit tricky to reproduce in R - here is code you can use to make static maps using ggplot2 using GBIF data</h3>
+    <!-- <pre class="pre-scrollable"> -->
+    <pre class="prettyprint">
+install.packages(c("taxize","rgbif"))
+library(taxize)
+library(rgbif)
+species <- c('Carpobrotus edulis','Rosmarinus officinalis','Ageratina riparia')
+out <- occurrencelist_many(species, coordinatestatus = TRUE, maxresults = 50, format="darwin", fixnames="change", removeZeros=TRUE)
+out$taxonName <- capwords(out$taxonName, onlyfirst=TRUE)
+gbifmap(out, customize = list(
+  scale_colour_brewer("", palette="Spectral"),
+  theme(legend.key = element_blank(), 
+        legend.position = "bottom", 
+        plot.background = element_rect(colour="grey"),
+        panel.border = element_blank()),
+  scale_x_continuous(expand=c(0,0)),
+  scale_y_continuous(expand=c(0,0)),
+  guides(colour=guide_legend(override.aes = list(size = 5), nrow=2))
+))
+    </pre>
+</div>
+</div>
+
+<!-- # interactive map info modal -->
+<!-- <a href="#mapModal" role="btn" class="btn btn-info" data-toggle="modal" style="float:right;"><i class="icon-question-sign icon-white"></i></a> -->
 
 <!-- Modal -->
 <div id="mapModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="mapModal" aria-hidden="true">
@@ -14,5 +64,34 @@
         and publish interactive javascript visualizations from R. <br><br>
         You can choose the number of occurrences to search for, the color palette, and map layer on the sidebar to the left. <br><br>
         Thanks to Ramnath Vaidyanathan for a lot of help with these maps.
+        <br><br><br>
+
+
     </div>
 </div>
+
+
+<!-- fullscreen map modal -->
+<!-- <head>
+  <script src="shared/jquery.js" type="text/javascript"></script>
+  <script src="shared/shiny.js" type="text/javascript"></script>
+  <link rel="stylesheet" type="text/css" href="shared/shiny.css"/> 
+</head> -->
+<!-- Modal -->
+<!-- <div id="mapModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="mapModal" aria-hidden="true">
+
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="mapModal">Info</h3>
+    </div>
+
+    <div class="modal-body">
+    <body>
+        <div id="plot" class="shiny-plot-output" 
+           style="width: 100%; height: 100%">
+        </div> 
+  
+          <div id="map_rcharts_fullscreen" class="shiny-html-output"></div>
+    </body>
+    </div>
+</div> -->
