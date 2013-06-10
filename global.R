@@ -11,7 +11,7 @@ rcharts_prep1 <- function(sppchar, occurrs, datasource){
     out$taxonName <- capwords(out$taxonName, onlyfirst=TRUE)
     out <- out[,c("taxonName","county","decimalLatitude","decimalLongitude",
                   "institutionCode","collectionCode","catalogNumber","basisOfRecordString","collector")]
-    out
+    apply(out, 1, as.list)
   } else
   {
     require(rbison); require(doMC)
@@ -36,12 +36,10 @@ get_colors <- function(vec, palette_name){
 rcharts_prep2 <- function(out, palette_name, popup = FALSE){ 
   require(rgbif)
   
-  if(is.gbiflist(out))
-    out <- apply(out, 1, as.list)
-  
   # colors
-  mycolors <- get_colors(out$taxonName, palette_name)
-  mycolors_df <- data.frame(taxon=unique(sapply(out, function(x) x[["taxonName"]])), color=mycolors)
+  uniq_name_vec <- unique(sapply(out, function(x) x[["taxonName"]]))
+  mycolors <- get_colors(uniq_name_vec, palette_name)
+  mycolors_df <- data.frame(taxon=uniq_name_vec, color=mycolors)
   
   out_list2 <- llply(out, function(x){ 
     x$fillColor = mycolors_df[mycolors_df$taxon %in% x$taxonName, "color"]
