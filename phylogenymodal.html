@@ -10,9 +10,15 @@
 
     footer{position : absolute; bottom : 2%; left : 33%; right: -50px; padding : 5px; width: 100%}
     /*.row-fluid .span6{width: 80%;}*/
+
+    .row-fluid .span1 { width: 1.982906%; }
 </style>
 
-<a href="#phycodeModal" role="btn" class="btn btn-inverse" data-toggle="modal" style="float:right;"><i class="icon-code icon-white"></i></a>
+
+<div class="span1" style="float: right;">
+    <a href="#phycodeModal" role="btn" class="btn btn-inverse" data-toggle="modal" style="float:right;"><i class="icon-code icon-white"></i></a>
+    <a href="#phyModal" role="btn" class="btn btn-info" data-toggle="modal" style="float:right;"><i class="icon-question-sign icon-white"></i></a>
+</div>
 
 <!-- Get Code Modal -->
 <div id="phycodeModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="phycodeModal" aria-hidden="true">
@@ -53,7 +59,7 @@ ggphylo(phylog, label.size=5, label.color.by="circle", label.color.scale=scale_c
     </div>
 
 
-    <a href="#phyModal" role="btn" class="btn btn-info" data-toggle="modal" style="float:right;"><i class="icon-question-sign icon-white"></i></a>
+    <!-- <a href="#phyModal" role="btn" class="btn btn-info" data-toggle="modal" style="float:right;"><i class="icon-question-sign icon-white"></i></a> -->
 
     <!-- Modal -->
     <div id="phyModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">

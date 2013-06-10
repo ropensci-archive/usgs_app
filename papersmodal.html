@@ -1,4 +1,13 @@
-<a href="#paperscodeModal" role="btn" class="btn btn-inverse" data-toggle="modal" style="float:right;"><i class="icon-code icon-white"></i></a>
+<style>
+    .row-fluid .span1 { width: 1.982906%; }
+</style>
+
+<div class="span1" style="float: right;">
+    <a href="#paperscodeModal" role="btn" class="btn btn-inverse" data-toggle="modal" style="float:right;"><i class="icon-code icon-white"></i></a>
+    <a href="#papersModal" role="btn" class="btn btn-info" data-toggle="modal" style="float:right;"><i class="icon-question-sign icon-white"></i></a>
+</div>
+
+<!-- <a href="#paperscodeModal" role="btn" class="btn btn-inverse" data-toggle="modal" style="float:right;"><i class="icon-code icon-white"></i></a> -->
 
 <!-- Get Code Modal -->
 <div id="paperscodeModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="paperscodeModal" aria-hidden="true">
@@ -22,7 +31,7 @@ dat
      </div>
 </div>
 
-<a href="#papersModal" role="btn" class="btn btn-info" data-toggle="modal" style="float:right;"><i class="icon-question-sign icon-white"></i></a>
+<!-- <a href="#papersModal" role="btn" class="btn btn-info" data-toggle="modal" style="float:right;"><i class="icon-question-sign icon-white"></i></a> -->
 
 <!-- Modal -->
 <div id="papersModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="papersModal" aria-hidden="true">
@@ -30,7 +39,7 @@ dat
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
           <h3 id="papersModal">Info</h3>
      </div>
-     
+
      <div class="modal-body">
           Taxon names searched against the <a href="http://api.plos.org/" target="_blank">PLoS search API</a><br><br>
           Links to papers via their DOIs can be viewed in <a href="http://macrodocs.org/" target="_blank">Macrodocs</a>

@@ -1,6 +1,8 @@
 <style>
      .btn { float: right; }
      a.tooltip{ z-index:1030; background-color: #000000}
+     
+    .row-fluid .span1 { width: 1.982906%; }
 </style>
 
 <!-- Downoad Button -->
@@ -10,7 +12,13 @@
 <link href="//netdna.bootstrapcdn.com/font-awesome/3.1.1/css/font-awesome.css" rel="stylesheet">
 <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
 
-<a href="#myModal" role="btn" class="btn btn-inverse" data-toggle="modal"><i class="icon-code icon-white"></i></a>
+
+<div class="span1" style="float: right;">
+    <a href="#myModal" role="btn" class="btn btn-inverse" data-toggle="modal"><i class="icon-code icon-white"></i></a>
+    <a href="#tnrsModal" role="btn" class="btn btn-info" data-toggle="modal" style="float:right;"><i class="icon-question-sign icon-white"></i></a>
+</div>
+
+<!-- <a href="#myModal" role="btn" class="btn btn-inverse" data-toggle="modal"><i class="icon-code icon-white"></i></a> -->
 
 <!-- Get Code Modal -->
 <div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -30,7 +38,7 @@ tnrs(species, getpost="POST", source_ = "NCBI")[,1:5]
      </div>
 </div>
 
-<a href="#tnrsModal" role="btn" class="btn btn-info" data-toggle="modal" style="float:right;"><i class="icon-question-sign icon-white"></i></a>
+<!-- <a href="#tnrsModal" role="btn" class="btn btn-info" data-toggle="modal" style="float:right;"><i class="icon-question-sign icon-white"></i></a> -->
 
 <!-- Modal -->
 <div id="tnrsModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">

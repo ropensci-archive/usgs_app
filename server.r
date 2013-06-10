@@ -2,6 +2,9 @@ require(shiny)
 require(rCharts)
 library(taxize)
 
+options(xtable.type = "html")
+options(xtable.include.rownames = FALSE)
+
 shinyServer(function(input, output){
 
   # factor out code common to all functions.
@@ -28,11 +31,7 @@ shinyServer(function(input, output){
   })
   
   output$phylogeny <- renderPlot({
-    require(ape)
-    require(ggphylo)
-    require(doMC)
-    
-    
+    require(ape); require(ggphylo); require(doMC)    
     # Make phylogeny
     registerDoMC(cores=4)
     phylog <- phylomatic_tree(taxa=species2(), get = 'POST', informat='newick', method = "phylomatic",
@@ -55,7 +54,6 @@ shinyServer(function(input, output){
             panel.border = element_blank())
     print(p)
   })
-  
   
   occur_data <- reactive({
     rcharts_prep1(sppchar = input$spec, occurrs = input$numocc, datasource = input$datasource)
@@ -80,16 +78,16 @@ shinyServer(function(input, output){
   })
   
   # full screen interactive chart
-  output$map_rcharts_fullscreen <- renderMap({  
-    imap = gbifmap2(input = rcharts_data(), input$provider, width=1600, height=800)
-    imap$legend(
-      position = 'bottomright',
-      colors = get_colors(species2(), get_palette(input$palette)),
-      labels = species2()
-    )
-    imap
-  })
-  
+#   output$map_rcharts_fullscreen <- renderMap({  
+#     imap = gbifmap2(input = rcharts_data(), input$provider, width=1600, height=800)
+#     imap$legend(
+#       position = 'bottomright',
+#       colors = get_colors(species2(), get_palette(input$palette)),
+#       labels = species2()
+#     )
+#     imap
+#   })
+#   
   output$papers <- renderText({
     require(rplos); require(xtable); require(plyr)
     dat <- llply(species2(), function(x) searchplos(x, fields='id,journal,title', limit = input$paperlim, key='WQcDSXml2VSWx3P')[,-4])
@@ -97,7 +95,9 @@ shinyServer(function(input, output){
     dat <- ldply(dat)
     dat$id <- paste0("<a href='http://macrodocs.org/?doi=", dat$id, "' target='_blank'> <i class='icon-book'></i> </a>")
     names(dat) <- c("Species","Read","Journal","Title")
-    g <- print(xtable(dat), include.rownames = FALSE, type = "html")
+#     options(xtable.type = "html")
+#     options(xtable.include.rownames = FALSE)
+    g <- print(xtable(dat), type="html")
     gsub("\n", "", gsub("&gt ", ">", gsub("&lt ", "<", g)))
   })
 })

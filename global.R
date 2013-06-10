@@ -34,6 +34,7 @@ get_colors <- function(vec, palette_name){
 }
 
 rcharts_prep2 <- function(out, palette_name, popup = FALSE){ 
+  require(rgbif)
   
   if(is.gbiflist(out))
     out <- apply(out, 1, as.list)
