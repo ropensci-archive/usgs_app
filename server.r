@@ -21,7 +21,7 @@ shinyServer(function(input, output){
   })
   
   class_prep <- reactive({
-    require(doMC)
+    require(doMC); require(plyr)
     registerDoMC(4)
     ldply(species2(), function(x) tax_name(query=x, get=c("genus", "family", "order", "class", "kingdom"), db="itis"), .parallel=TRUE)
 #     tax_name(query=species2(), get=c("genus", "family", "order", "class", "kingdom"), db="ncbi")
