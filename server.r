@@ -21,13 +21,29 @@ shinyServer(function(input, output){
   })
   
   class_prep <- reactive({
-    tax_name(query=species2(), get=c("genus", "family", "order", "class", "kingdom"), db="ncbi")
+    require(doMC)
+    registerDoMC(4)
+    ldply(species2(), function(x) tax_name(query=x, get=c("genus", "family", "order", "class", "kingdom"), db="itis"), .parallel=TRUE)
+#     tax_name(query=species2(), get=c("genus", "family", "order", "class", "kingdom"), db="ncbi")
   })
   
   output$rank_names <- renderTable({
     class_prep()
   })
   
+  children_prep <- reactive({
+    require(doMC)
+    registerDoMC(cores=4)
+    out <- llply(species2(), function(x) col_downstream(name = x, downto = input$downto)[[1]], .parallel=TRUE)
+    ldply(out)
+  })
+
+  output$children <- renderTable({
+    require(xtable)
+    df <- children_prep()
+    xtable(df)
+  })
+
   bar <- reactive({
     df <- gisd_isinvasive(x=species2(), simplify=TRUE)
     df$status <- gsub("Not in GISD", "Not Invasive", df$status)
@@ -46,21 +62,29 @@ shinyServer(function(input, output){
                               storedtree = "R20120829", taxaformat = "slashpath", outformat = "newick", clean = "true", parallel=TRUE)
     phylog$tip.label <- capwords(phylog$tip.label)
     
-    for(i in seq_along(phylog$tip.label)){
-      phylog <- tree.set.tag(phylog, tree.find(phylog, phylog$tip.label[i]), 'circle', bar()[bar()$species %in% gsub("_"," ",phylog$tip.label[i]),"status"])
-    }
-    
-    p <- ggphylo(phylog, label.size=5, label.color.by='circle', label.color.scale=scale_colour_discrete(name="", h=c(90, 10))) +
-      theme_bw(base_size=18) +
-      theme(panel.grid.major = element_blank(),panel.grid.minor = element_blank(),panel.background = element_blank(),
-            axis.title.x = element_text(colour=NA),
-            axis.title.y = element_blank(),
-            axis.text.x = element_blank(),
-            axis.text.y = element_blank(),
-            axis.line = element_blank(),
-            axis.ticks = element_blank(),
-            panel.border = element_blank())
-    print(p)
+    df <- bar()
+    vec <- sub("Not Invasive", "blue", df$status)
+    vec <- sub("Invasive", "red", vec)
+    plot.phylo(phylog, label.offset=0.2)
+    tiplabels(pch=16, cex=2, col=vec, adj=c(0.6,0.5))
+    leg.txt <- c("Not invasive", "Invasive")
+    legend("topleft", leg.txt, col=c("blue","red"), pch=16, pt.cex=2)
+
+#     for(i in seq_along(phylog$tip.label)){
+#       phylog <- tree.set.tag(phylog, tree.find(phylog, phylog$tip.label[i]), 'circle', bar()[bar()$species %in% gsub("_"," ",phylog$tip.label[i]),"status"])
+#     }
+#     
+#     p <- ggphylo(phylog, label.size=5, label.color.by='circle', label.color.scale=scale_colour_discrete(name="", h=c(90, 10))) +
+#       theme_bw(base_size=18) +
+#       theme(panel.grid.major = element_blank(),panel.grid.minor = element_blank(),panel.background = element_blank(),
+#             axis.title.x = element_text(colour=NA),
+#             axis.title.y = element_blank(),
+#             axis.text.x = element_blank(),
+#             axis.text.y = element_blank(),
+#             axis.line = element_blank(),
+#             axis.ticks = element_blank(),
+#             panel.border = element_blank())
+#     print(p)
   })
   
   output$phylogeny <- renderPlot({
@@ -127,6 +151,12 @@ shinyServer(function(input, output){
     }
   )
 
+  output$download_children <- downloadHandler(
+    filename = function() { 'data.csv' },
+    content = function(file) {
+      write.csv(children_prep(), file)
+    }
+  )
 #   output$download_phylogeny <- downloadHandler(
 #     filename = function() { 'phylogeny.png' },
 #     content = function(file) {

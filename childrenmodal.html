@@ -1,0 +1,56 @@
+<style>
+  .row-fluid .span1 { 
+    width: 1.982906%; 
+  }
+  #children{ 
+    height:600px;
+    overflow:auto; 
+  }
+</style>
+
+<div class="span1" style="float: right;">
+    <a href="#childrencodeModal" role="btn" class="btn btn-inverse" data-toggle="modal" style="float:right;"><i class="icon-code icon-white"></i></a>
+    <a href="#childrenModal" role="btn" class="btn btn-info" data-toggle="modal" style="float:right;"><i class="icon-question-sign icon-white"></i></a>
+    <a id="download_children" class="btn btn-warning shiny-download-link .Primitive(&quot;class&quot;)" href="" target="_blank" rel="tooltip" title="Download this data"><i class="icon-download icon-white"></i></a>
+</div>
+
+<!-- <a href="#childrenModal" role="btn" class="btn btn-inverse" data-toggle="modal" style="float:right;"><i class="icon-code icon-white"></i></a> -->
+
+<!-- Get Code Modal -->
+<div id="childrencodeModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="childrencodeModal" aria-hidden="true">
+     <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+          <h3 id="childrencodeModal">Run the code locally</h3>
+     </div>
+
+     <div class="modal-body">
+     <!-- <pre class="pre-scrollable"> -->
+     <pre class="prettyprint">
+install.packages("taxize")
+library(taxize)
+species <- c("species1","species2","species3")
+out <- llply(species, function(x) col_downstream(name = x, downto = <level here, Species, Genus, etc.>)[[1]])
+ldply(out)
+     </pre>
+     </div>
+</div>
+
+<!-- <a href="#classModal" role="btn" class="btn btn-info" data-toggle="modal" style="float:right;"><i class="icon-question-sign icon-white"></i></a> -->
+
+<!-- Modal -->
+<div id="childrenModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="childrenModal" aria-hidden="true">
+     <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+          <h3 id="childrenModal">Info</h3>
+     </div>
+
+     <div class="modal-body">
+          <a href="http://www.catalogueoflife.org/colwebsite/">Data from the Catalogue of Life API</a><br><br>
+          <h5>Data Fields</h5>
+          <ul><small>
+            <li><strong>childtaxa_id:</strong> child taxon id</li>
+            <li><strong>childtaxa_name:</strong> child taxon scientific name</li>
+            <li><strong>childtaxa_rank:</strong> child taxon rank</li> 
+          </small></ul>
+     </div>
+</div>

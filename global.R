@@ -5,9 +5,10 @@ rcharts_prep1 <- function(sppchar, occurrs, datasource){
   species2 <- strsplit(sppchar, ",")[[1]]
   
   if(datasource=="GBIF"){
+    require(doMC)
     require(rgbif)  
     out <- occurrencelist_many(species2, coordinatestatus = TRUE, maxresults = occurrs, 
-                               format="darwin", fixnames="change", removeZeros=TRUE)
+                               format="darwin", fixnames="change", removeZeros=TRUE, parallel=TRUE)
     out$taxonName <- capwords(out$taxonName, onlyfirst=TRUE)
     out <- out[,c("taxonName","county","decimalLatitude","decimalLongitude",
                   "institutionCode","collectionCode","catalogNumber","basisOfRecordString","collector")]

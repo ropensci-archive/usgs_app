@@ -1,5 +1,9 @@
 <style>
-    .row-fluid .span1 { width: 1.982906%; }
+  .row-fluid .span1 { width: 1.982906%; }
+  #rank_names{ 
+    height:600px;
+    overflow:auto; 
+  }
 </style>
 
 <div class="span1" style="float: right;">
@@ -38,7 +42,7 @@ tax_name(query=species, get=c("genus", "family", "order", "kingdom"), db="ncbi",
      </div>
 
      <div class="modal-body">
-          <a href="http://taxosaurus.org/">Data from the Taxosaurus API</a><br><br>
+          <a href="http://www.itis.gov/ws_description.html">Data from the ITIS API</a><br><br>
           <h5>Data Fields</h5>
           <ul><small>
                <li><strong>acceptedName:</strong> the new name</li>

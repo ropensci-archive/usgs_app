@@ -1,6 +1,8 @@
 require(shiny)
 require(rCharts)
 
+options(shiny.table.class = "table data table-striped table-condensed table-bordered ")
+
 shinyUI(pageWithSidebar(
   
   headerPanel(title=HTML("TaxaViewer - <i>Species exploration</i> "), windowTitle="TaxaViewer"),
@@ -12,7 +14,7 @@ shinyUI(pageWithSidebar(
          .leaflet {height: 600px; width: 830px;}
          </style>'),
     
-    wellPanel(
+#     wellPanel(
       HTML('
          <style type="text/css">
           .btn-submit {float: left;}
@@ -24,11 +26,17 @@ shinyUI(pageWithSidebar(
       
       includeHTML('egsmodal.html'),
 
-      HTML('<textarea id="spec" rows="3" cols="50">Carpobrotus edulis,Rosmarinus officinalis,Ageratina riparia</textarea>')
-    ),
+      HTML('<textarea id="spec" rows="3" cols="50">Carpobrotus edulis,Rosmarinus officinalis,Ageratina riparia</textarea>'),
+#     ),
     
+    # downstream options for ITIS Children tab
+#     wellPanel(
+      h5(strong("Downstream options:")),
+      selectInput(inputId="downto", label="Select taxonomic level to retrieve", choices=c("Class","Order","Family","Genus","Species"), selected="Species"),
+#     ),
+
     # Map options 
-    wellPanel(
+#     wellPanel(
       h5(strong("Map options:")),
       # data source
       selectInput(inputId="datasource", label="Select data source", choices=c("GBIF","BISON"), selected="GBIF"),
@@ -43,21 +51,25 @@ shinyUI(pageWithSidebar(
                   selected = 'MapQuestOpen.OSM'
       ),
       
-      includeHTML('providersmodal.html')
-    ),
+      includeHTML('providersmodal.html'),
+#     ),
     
-    sliderInput(inputId="paperlim", label="Number of papers to return", min=1, max=50, value=10, step=1, ticks=TRUE),
+      h5(strong("Papers options:")),
+      sliderInput(inputId="paperlim", label="Number of papers to return", min=1, max=50, value=10, step=1, ticks=TRUE),
     
-    wellPanel(
+#       wellPanel(
       includeHTML('infomodal.html')
-    )
+#       )
     
   ),
      
-  mainPanel(
+  mainPanel(  
     tabsetPanel(
       tabPanel("Name Resolution", includeHTML('tnrs.html'), tableOutput("tnrs")),               
-      tabPanel("ITIS Classification", includeHTML('classmodal.html'), tableOutput("rank_names")),
+      tabPanel("Classification", includeHTML('classmodal.html'), tableOutput("rank_names")),
+      tabPanel("Downstream", includeHTML('childrenmodal.html'), 
+               HTML('<style type="text/css">#children{height:600px;overflow:auto;}</style>'), 
+               htmlOutput("children")),
       tabPanel("Phylogeny", includeHTML('phylogenymodal.html'), plotOutput("phylogeny")),
       tabPanel("Map", includeHTML('mapmodal.html'), mapOutput('map_rcharts')),
       tabPanel("Papers", includeHTML('papersmodal.html'), htmlOutput('papers'))
