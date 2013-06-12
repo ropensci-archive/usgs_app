@@ -40,21 +40,14 @@ df$status <- gsub("Not in GISD", "Not Invasive", df$status)
 
 phylog <- phylomatic_tree(taxa=species, get = "POST", informat="newick", method = "phylomatic", storedtree = "R20120829", taxaformat = "slashpath",     outformat = "newick", clean = "true")
 phylog$tip.label <- capwords(phylog$tip.label)
-for(i in seq_along(phylog$tip.label)){
-    phylog <- tree.set.tag(phylog, tree.find(phylog, phylog$tip.label[i]), "circle", df[df$species %in% gsub("_"," ",phylog$tip.label[i]),"status"])
-}
-ggphylo(phylog, label.size=5, label.color.by="circle", label.color.scale=scale_colour_discrete(name="", h=c(90, 10))) +
-    theme_bw(base_size=18) +
-    theme(panel.grid.major = element_blank(), 
-            panel.grid.minor = element_blank(),
-            panel.background = element_blank(),
-            axis.title.x = element_text(colour=NA),
-            axis.title.y = element_blank(),
-            axis.text.x = element_blank(),
-            axis.text.y = element_blank(),
-            axis.line = element_blank(),
-            axis.ticks = element_blank(),
-            panel.border = element_blank())
+
+vec <- sub("Not Invasive", "blue", df$status)
+vec <- sub("Invasive", "red", vec)
+
+plot.phylo(phylog, label.offset=0.1)
+tiplabels(pch=16, cex=2, col=vec, adj=c(0.5,0.5))
+leg.txt <- c("Not invasive", "Invasive")
+legend("topleft", leg.txt, col=c("blue","red"), pch=16, pt.cex=2)
     </pre>
     </div>
     </div>

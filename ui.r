@@ -26,7 +26,7 @@ shinyUI(pageWithSidebar(
       
       includeHTML('egsmodal.html'),
 
-      HTML('<textarea id="spec" rows="3" cols="50">Carpobrotus edulis,Rosmarinus officinalis,Ageratina riparia</textarea>'),
+      HTML('<textarea id="spec" rows="3" cols="50">Carpobrotus,Rosmarinus,Ageratina</textarea>'),
 #     ),
     
     # downstream options for ITIS Children tab

@@ -65,8 +65,8 @@ shinyServer(function(input, output){
     df <- bar()
     vec <- sub("Not Invasive", "blue", df$status)
     vec <- sub("Invasive", "red", vec)
-    plot.phylo(phylog, label.offset=0.2)
-    tiplabels(pch=16, cex=2, col=vec, adj=c(0.6,0.5))
+    plot.phylo(phylog, label.offset=0.1)
+    tiplabels(pch=16, cex=2, col=vec, adj=c(0.5,0.5))
     leg.txt <- c("Not invasive", "Invasive")
     legend("topleft", leg.txt, col=c("blue","red"), pch=16, pt.cex=2)
 
@@ -120,10 +120,8 @@ shinyServer(function(input, output){
     dat <- ldply(dat)
     dat$id <- paste0("<a href='http://macrodocs.org/?doi=", dat$id, "' target='_blank'> <i class='icon-book'></i> </a>")
     names(dat) <- c("Species","Read","Journal","Title")
-#     options(xtable.type = "html")
-#     options(xtable.include.rownames = FALSE)
-    g <- print(xtable(dat), type="html")
-    gsub("\n", "", gsub("&gt ", ">", gsub("&lt ", "<", g)))
+    print(xtable(dat), type="html", sanitize.text.function = function(x){x})
+    # gsub("\n", "", gsub("&gt ", ">", gsub("&lt ", "<", g)))
   })
   
   output$papers <- renderText({
